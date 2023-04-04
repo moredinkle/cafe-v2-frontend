@@ -1,5 +1,5 @@
 <template>
-  <v-card :title="title" :subtitle="subtitle" :text="text" variant="outlined" @click.stop="goToMenu()">
+  <v-card :title="title" :subtitle="dayOfMenu" :text="cardText" variant="outlined" @click.stop="goToMenu()">
   </v-card>
 </template>
 
@@ -7,23 +7,37 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  data: () => {},
+  data()  {
+    return {
+      dayOfMenu: '',
+      cardText: `Total recaudado: 100Bs`,
+      title: '',
+      days: ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado']
+    }
+
+  },
   props: {
-    title: {
+    date: {
       type: String,
       default: ''
     },
-    subtitle: {
+    menuId: {
       type: String,
       default: ''
     },
-    text: String
   },
   methods: {
     goToMenu(){
-      // this.$router.push(`menus/${}`)
-      console.log("menu elegido");
+      this.$router.push(`/menus/${this.menuId}`);
+    },
+    displayData(){
+      const date = new Date(this.date);
+      this.title = date.toLocaleDateString();
+      this.dayOfMenu = this.days[date.getDay()];
     }
+  },
+  created(){
+    this.displayData();
   }
 });
 </script>

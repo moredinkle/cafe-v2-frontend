@@ -15,22 +15,24 @@
     </v-col>
     <v-col cols="12" sm="6">
       <span class="text-h5">Menú activo</span>
-      <menu-card class="mt-1" title="1/1/2023" subtitle="Domingo" text="Total recaudado: 100Bs" />
+      <menu-card class="mt-1" :date="currentMenu.date" :menuId="currentMenu.id" />
     </v-col>
   </v-row>
   <span class="text-h5">Menús pasados</span>
   <v-row class="my-2">
-    <v-col cols="12" sm="4" md="3" v-for="n in 10" :key="n">
-      <menu-card title="1/1/2023" subtitle="Domingo" text="Total recaudado: 100Bs" />
+    <v-col cols="12" sm="4" md="3" v-for="menu in pastMenus" :key="menu.id">
+      <menu-card :date="menu.date" :menuId="menu.id" />
     </v-col>
   </v-row>
 </template>
+
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import axios from 'axios';
 import MenuCard from "@/components/Menu/MenuCard.vue";
 import { useApiUrlStore } from '../stores/generic-store';
+import type { Menu } from '../utils/types';
 
 
 export default defineComponent({
@@ -41,7 +43,9 @@ export default defineComponent({
   data() {
     return {
       apiUrlStore: useApiUrlStore(),
-      newMenuDate: new Date().toISOString().substr(0, 10),
+      newMenuDate: new Date().toISOString().slice(0, 10),
+      pastMenus: [] as Menu[],
+      currentMenu: {} as Menu
     };
   },
   methods:{
@@ -52,6 +56,26 @@ export default defineComponent({
       const newId = response.data.newMenuId;
       this.$router.push(`/menus/${newId}`);
     },
+
+    async getMenus(){
+      const response = await axios.get(`${this.apiUrlStore.url}/menus`);
+      const rawMenus = response.data.data;
+      console.log(rawMenus)
+      rawMenus.map((menu: Menu) => {
+        if(menu.status==="ACTIVE"){
+          this.currentMenu = menu;
+        }
+        else {
+          this.pastMenus.push(menu);
+        }
+        //TODO quitar esto
+        this.currentMenu = menu;
+      });
+    },
+
+  },
+  async created(){
+    await this.getMenus();
   }
 });
 </script>
