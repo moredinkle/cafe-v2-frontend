@@ -14,8 +14,8 @@
       </v-form>
     </v-col>
     <v-col cols="12" sm="6">
-      <span class="text-h5">Menú activo</span>
-      <menu-card class="mt-1" :date="currentMenu.date" :menuId="currentMenu.id" />
+      <span class="text-h5 mb-1">Menú activo</span>
+      <menu-card :date="currentMenu.date" :menuId="currentMenu.id" />
     </v-col>
   </v-row>
   <span class="text-h5">Menús pasados</span>
@@ -31,8 +31,9 @@
 import { defineComponent } from "vue";
 import axios from 'axios';
 import MenuCard from "@/components/Menu/MenuCard.vue";
-import { useApiUrlStore } from '../stores/generic-store';
 import type { Menu } from '../utils/types';
+
+const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 
 export default defineComponent({
@@ -42,7 +43,6 @@ export default defineComponent({
   },
   data() {
     return {
-      apiUrlStore: useApiUrlStore(),
       newMenuDate: new Date().toISOString().slice(0, 10),
       pastMenus: [] as Menu[],
       currentMenu: {} as Menu
@@ -50,17 +50,14 @@ export default defineComponent({
   },
   methods:{
     async createMenu(){
-      console.log(`${this.apiUrlStore.url}/menus`);
-      const response = await axios.post(`${this.apiUrlStore.url}/menus`, {date: this.newMenuDate, status: "INACTIVE"});
-      console.log(response.data);
+      const response = await axios.post(`${backendUri}/menus`, {date: this.newMenuDate, status: "INACTIVE"});
       const newId = response.data.newMenuId;
       this.$router.push(`/menus/${newId}`);
     },
 
     async getMenus(){
-      const response = await axios.get(`${this.apiUrlStore.url}/menus`);
+      const response = await axios.get(`${backendUri}/menus`);
       const rawMenus = response.data.data;
-      console.log(rawMenus)
       rawMenus.map((menu: Menu) => {
         if(menu.status==="ACTIVE"){
           this.currentMenu = menu;
@@ -68,8 +65,6 @@ export default defineComponent({
         else {
           this.pastMenus.push(menu);
         }
-        //TODO quitar esto
-        this.currentMenu = menu;
       });
     },
 

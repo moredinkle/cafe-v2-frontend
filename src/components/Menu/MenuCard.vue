@@ -34,6 +34,7 @@ export default defineComponent({
       const date = new Date(this.date);
       this.title = date.toLocaleDateString();
       this.dayOfMenu = this.days[date.getDay()];
+      console.log(this.date);
     }
   },
   created(){
