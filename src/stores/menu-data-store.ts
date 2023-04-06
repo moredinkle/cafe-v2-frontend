@@ -1,13 +1,13 @@
-import type { MenuItem } from '@/utils/types';
+import type { MenuItem, Menu } from '@/utils/types';
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export const useMenuDataStore = defineStore({
-  id: 'menuItems',
+  id: 'menuDataStore',
   state: () => ({
-    menu: {} as MenuItem,
+    menu: {} as Menu,
     menuItems: [] as MenuItem[]
   }),
   getters: {},

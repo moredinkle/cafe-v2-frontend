@@ -13,7 +13,8 @@
 import { defineComponent } from "vue";
 import ContentWrapper from "./components/UI/ContentWrapper.vue";
 import NavBar from "./components/UI/NavBar.vue";
-
+import { useMenuDataStore } from "./stores/menu-data-store";
+import { mapActions, mapStores } from "pinia";
 
 export default defineComponent({
   name: "App",
@@ -21,22 +22,25 @@ export default defineComponent({
     NavBar,
     ContentWrapper,
   },
-
-  data() {
-    return {
-      //
-    };
+  computed: {
+    ...mapStores(useMenuDataStore),
   },
+  data() {
+    return {};
+  },
+  methods: {
+    ...mapActions(useMenuDataStore,["getCurrentMenuData", "updateMenuItems"]),
+  },
+  async created(){
+    await this.getCurrentMenuData();
+    await this.updateMenuItems(this.menuDataStoreStore.menu.id as string);
+  }
 });
 </script>
 
 <style>
-  
-</style>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Almarai&family=Figtree&family=Varela+Round&family=Yantramanav&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Almarai&family=Figtree&family=Varela+Round&family=Yantramanav&display=swap");
 #app {
-  /* font-family: 'Almarai', sans-serif; */
-  font-family: 'Figtree', sans-serif;
+  font-family: "Figtree", sans-serif;
 }
 </style>
