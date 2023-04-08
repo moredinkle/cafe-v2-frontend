@@ -25,27 +25,7 @@
 
     <v-col cols="12" md="10">
       <template v-if="editSelected">
-        <v-card rounded>
-          <div class="px-3">
-            <div class="d-flex justify-space-between align-center">
-              <h1>{{ menu.date }}</h1>
-              <span class="text-subtitle-1 text-red">{{ menu.status }}</span>
-            </div>
-            <template v-if="menu.status !== 'FINISHED'">
-              <menu-item-form @addMenuItem="addItemToMenu" />
-            </template>
-            <table-component
-              class="my-3"
-              :headers="tableHeaders"
-              :items="menuItems"
-              @deleteTableItem="openDeleteDialog"
-              @editTableItem="openEditDialog"
-              :deleteButton="menu.status === 'INACTIVE'"
-              :editButton="menu.status !== 'FINISHED'"
-              tableTitle="Menú"
-            />
-          </div>
-        </v-card>
+        <menu-edit :menu="menu" :menu-items="menuItems" @emit-update-items="updateMenuItems" />
       </template>
 
       <template v-else>
@@ -56,52 +36,23 @@
       </template>
     </v-col>
   </v-row>
-  <!-- Popups -->
-  <popup-dialog
-    :dialog="deleteDialog"
-    title="Eliminar"
-    @confirm-dialog-action="deleteItem"
-    @closeDialog="deleteDialog = false"
-    @click:outside="deleteDialog = false"
-  >
-    <span>Seguro que desea eliminar {{ itemToDelete.name }} del menú?</span>
-  </popup-dialog>
-
-  <popup-dialog
-    :dialog="editDialog"
-    title="Editar"
-    action-confirm-text="Guardar"
-    @confirm-dialog-action="editItem"
-    @closeDialog="editDialog = false"
-    @click:outside="editDialog = false"
-  >
-    <v-form @submit.prevent>
-      <v-text-field v-model="itemToEdit.name" :rules="itemNameRules" label="Nombre" type="text"></v-text-field>
-      <v-text-field v-model="itemToEdit.stock" :rules="stockRules" label="Stock" type="number"></v-text-field>
-    </v-form>
-  </popup-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import MenuItemForm from "@/components/Menu/MenuItemForm.vue";
-import TableComponent from "@/components/UI/TableComponent.vue";
-import PopupDialog from "@/components/UI/PopupDialog.vue";
-import axios from "axios";
+import MenuEdit from "@/components/Menu/MenuEdit.vue";
 import type { Menu } from "@/utils/types";
 import type { MenuItem } from "../utils/types";
-import { isProxy, toRaw } from "vue";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
+import axios from "axios";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
   name: "MenuView",
   components: {
-    MenuItemForm,
-    TableComponent,
-    PopupDialog,
+    MenuEdit,
   },
   setup() {
     const { mdAndUp } = useDisplay();
@@ -115,29 +66,7 @@ export default defineComponent({
       reportSelected: false,
       menu: {} as Menu,
       menuItems: [] as MenuItem[],
-      itemToDelete: {} as MenuItem,
-      itemToEdit: {} as MenuItem,
-      deleteDialog: false,
-      editDialog: false,
       menuId: this.$route.params.id_menu as string,
-      tableHeaders: [
-        { title: "Nombre", align: "start", key: "name" },
-        { title: "Precio", key: "price" },
-        { title: "Stock", key: "stock" },
-        { title: "Acciones", key: "actions", sortable: false },
-      ],
-      itemNameRules: [
-        (value: string) => {
-          if (value?.length > 3) return true;
-          return "First name must be at least 3 characters.";
-        },
-      ],
-      stockRules: [
-        (value: number) => {
-          if (value > 0) return true;
-          return "Stock debe ser mayor a 0";
-        },
-      ],
     };
   },
   computed: {
@@ -162,7 +91,6 @@ export default defineComponent({
       const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/items`);
       this.menuItems = response.data.data;
     },
-
     selectReportTab() {
       if (this.editSelected) {
         this.editSelected = false;
@@ -176,59 +104,10 @@ export default defineComponent({
       }
       this.editSelected = true;
     },
-
-    async addItemToMenu(item: any) {
-      const menuItem = item as MenuItem;
-      menuItem.menuId = this.menuId;
-      await axios.post(`${backendUri}/menu-items`, menuItem);
-      this.checkActiveMenu();
-    },
-
-    openEditDialog(item: any) {
-      let rawItem;
-      if (isProxy(item)) {
-        rawItem = toRaw(item);
-      }
-      const currentItem = rawItem.raw as MenuItem;
-      this.itemToEdit = { ...currentItem };
-      this.editDialog = true;
-    },
-
-    async editItem() {
-      await axios.put(`${backendUri}/menu-items/${this.itemToEdit.id}`, this.itemToEdit);
-      this.editDialog = false;
-      this.itemToEdit = {} as MenuItem;
-      await this.checkActiveMenu();
-    },
-
-    openDeleteDialog(item: any) {
-      let rawItem;
-      if (isProxy(item)) {
-        rawItem = toRaw(item);
-      }
-      const currentItem = rawItem.raw as MenuItem;
-      this.itemToDelete = { ...currentItem };
-      this.deleteDialog = true;
-    },
-
-    async deleteItem() {
-      await axios.delete(`${backendUri}/menu-items/${this.itemToDelete.id}`);
-      this.deleteDialog = false;
-      this.itemToDelete = {} as MenuItem;
-      await this.checkActiveMenu();
-    },
-
-    async checkActiveMenu() {
-      if (this.menu.id === this.menuDataStoreStore.currentMenu.id) {
-        await this.updateActiveMenuItems(this.menu.id);
-      } else {
-        await this.updateMenuItems();
-      }
-    },
   },
-
-  async created() {
+  async created(){
     await this.getMenuData();
-  },
-});//aqui esta repitiendo menu e items
+    await this.updateMenuItems();
+  }
+}); //aqui esta repitiendo menu e items
 </script>
