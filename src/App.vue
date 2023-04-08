@@ -33,7 +33,6 @@ export default defineComponent({
   },
   async created(){
     await this.getCurrentMenuData();
-    await this.updateActiveMenuItems(this.menuDataStoreStore.currentMenu.id as string);
   }
 });
 </script>

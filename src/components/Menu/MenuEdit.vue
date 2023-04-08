@@ -50,13 +50,12 @@
 import { defineComponent } from "vue";
 import MenuItemForm from "@/components/Menu/MenuItemForm.vue";
 import TableComponent from "@/components/UI/TableComponent.vue";
+import PopupDialog from "../UI/PopupDialog.vue";
 import axios from "axios";
 import type { Menu } from "@/utils/types";
 import type { MenuItem } from "../../utils/types";
 import { isProxy, toRaw } from "vue";
 import { useDisplay } from "vuetify";
-import { mapStores, mapActions } from "pinia";
-import { useMenuDataStore } from "../../stores/menu-data-store";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
@@ -64,16 +63,17 @@ export default defineComponent({
   components: {
     MenuItemForm,
     TableComponent,
+    PopupDialog,
   },
-  emits: ['emitUpdateItems'],
-  props:{
+  emits: ["emitUpdateItems", "emitUpdateActiveItems"],
+  props: {
     menu: {
-        type: Object as ()=> Menu,
-        default: {} as Menu
+      type: Object as () => Menu,
+      default: {} as Menu,
     },
     menuItems: {
-        type: Array as ()=> MenuItem[],
-        default: {} as MenuItem
+      type: Array as () => MenuItem[],
+      default: {} as MenuItem,
     },
   },
   setup() {
@@ -108,7 +108,6 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapStores(useMenuDataStore),
     formattedDate() {
       const date = new Date(this.menu.date);
       const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" } as const;
@@ -117,13 +116,11 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems"]),
-
     async addItemToMenu(item: any) {
       const menuItem = item as MenuItem;
       menuItem.menuId = this.menuId;
       await axios.post(`${backendUri}/menu-items`, menuItem);
-      this.checkActiveMenu();
+      this.$emit("emitUpdateItems");
     },
 
     openEditDialog(item: any) {
@@ -140,7 +137,7 @@ export default defineComponent({
       await axios.put(`${backendUri}/menu-items/${this.itemToEdit.id}`, this.itemToEdit);
       this.editDialog = false;
       this.itemToEdit = {} as MenuItem;
-      await this.checkActiveMenu();
+      this.$emit("emitUpdateItems");
     },
 
     openDeleteDialog(item: any) {
@@ -157,17 +154,8 @@ export default defineComponent({
       await axios.delete(`${backendUri}/menu-items/${this.itemToDelete.id}`);
       this.deleteDialog = false;
       this.itemToDelete = {} as MenuItem;
-      await this.checkActiveMenu();
-    },
-
-    async checkActiveMenu() {
-      if (this.menu.id === this.menuDataStoreStore.currentMenu.id) {
-        await this.updateActiveMenuItems(this.menu.id);
-      } else {
-        this.$emit('emitUpdateItems');
-      }
+      this.$emit("emitUpdateItems");
     },
   },
-
 });
 </script>

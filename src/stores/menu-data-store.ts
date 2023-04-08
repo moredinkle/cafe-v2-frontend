@@ -12,17 +12,20 @@ export const useMenuDataStore = defineStore({
   }),
   getters: {},
   actions: {
-    async updateActiveMenuItems(id: string) {
-      const response = await axios.get(`${backendUri}/menus/${id}/items`);
+    async updateActiveMenuItems() {
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/items`);
+      const prev = this.currentMenuItems;
       this.currentMenuItems = response.data.data;
       this.currentMenuItems.forEach(item => {
         item.price = parseFloat(item.price as unknown as string);
       });
+      console.log(this.currentMenuItems === prev);
     },
     async getCurrentMenuData() {
       try {
         const response = await axios.get(`${backendUri}/menus/?field=status&value=ACTIVE`);
         this.currentMenu = response.data.data[0];
+        this.updateActiveMenuItems();
       } catch (error) {
         alert("No active menu");
       }

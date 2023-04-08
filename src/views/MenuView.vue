@@ -90,7 +90,11 @@ export default defineComponent({
     async updateMenuItems() {
       const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/items`);
       this.menuItems = response.data.data;
+      if (this.menuId === this.menuDataStoreStore.currentMenu.id) {
+        this.updateActiveMenuItems();
+      }
     },
+
     selectReportTab() {
       if (this.editSelected) {
         this.editSelected = false;
@@ -105,9 +109,8 @@ export default defineComponent({
       this.editSelected = true;
     },
   },
-  async created(){
-    await this.getMenuData();
-    await this.updateMenuItems();
-  }
+  async created() {
+    this.getMenuData();
+  },
 }); //aqui esta repitiendo menu e items
 </script>

@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col cols="12" sm="6" md="4" lg="3" v-for="(item, index) in menuItems" :key="item.id">
+    <v-col cols="12" sm="6" md="4" lg="3" v-for="(item, index) in menuDataStoreStore.currentMenuItems" :key="item.id">
       <sales-card
         :id="item.id"
         :name="item.name"
@@ -29,7 +29,7 @@
         ></v-text-field>
     </v-col>
     <v-col cols="6" sm="4">
-      <span class="text-subtitle-1">
+      <span class="text-h6 d-flex justify-center">
         Cambio: {{ change }}
       </span>
     </v-col>
@@ -42,7 +42,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { useMenuDataStore } from "@/stores/menu-data-store";
-import { mapStores } from "pinia";
+import { mapActions, mapStores } from "pinia";
 import type { Menu, MenuItem } from "../utils/types";
 import { colors } from "@/utils/colors";
 import SalesCard from "@/components/Sales/SalesCard.vue";
@@ -88,6 +88,7 @@ export default defineComponent({
     };
   },
   methods: {
+    ...mapActions(useMenuDataStore, ["updateActiveMenuItems"]),
     deleteFromOrder(item: any) {
       const deleteIndex = this.orderItems.findIndex((it) => it.id === item.id);
       this.orderItems.splice(deleteIndex, 1);
@@ -111,5 +112,8 @@ export default defineComponent({
       this.orderTotal = this.orderItems.reduce((acc, obj) => { return acc + (obj.subtotal ? obj.subtotal : 0); }, 0);
     },
   },
+  created(){
+    this.updateActiveMenuItems();
+  }
 });
 </script>
