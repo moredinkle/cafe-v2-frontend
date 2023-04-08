@@ -88,10 +88,12 @@ export default defineComponent({
     },
 
     async updateMenuItems() {
-      const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/items`);
-      this.menuItems = response.data.data;
-      if (this.menuId === this.menuDataStoreStore.currentMenu.id) {
-        this.updateActiveMenuItems();
+      if (this.menu.status === "ACTIVE") {
+        await this.updateActiveMenuItems();
+        this.menuItems = [...this.menuDataStoreStore.currentMenuItems];
+      } else {
+        const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/items`);
+        this.menuItems = response.data.data;
       }
     },
 
@@ -110,7 +112,14 @@ export default defineComponent({
     },
   },
   async created() {
-    this.getMenuData();
+    if(this.menuId === this.menuDataStoreStore.currentMenu.id){
+      this.menu = {...this.menuDataStoreStore.currentMenu};
+      this.menuItems = [...this.menuDataStoreStore.currentMenuItems];
+      this.menu.date = this.formattedDate;
+    }
+    else{
+      this.getMenuData();
+    }
   },
 }); //aqui esta repitiendo menu e items
 </script>

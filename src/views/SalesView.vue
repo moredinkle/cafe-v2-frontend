@@ -113,7 +113,6 @@ export default defineComponent({
     },
   },
   created(){
-    this.updateActiveMenuItems();
   }
 });
 </script>
