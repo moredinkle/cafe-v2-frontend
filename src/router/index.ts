@@ -1,23 +1,23 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import MenuListView from '../views/MenuListView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import SalesView from '../views/SalesView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'menus',
-      component: MenuListView
+      name: 'sales',
+      component: SalesView
     },
     {
       path: '/menus',
       name: 'menus',
-      component: MenuListView
+      component: () => import('../views/MenuListView.vue')
     },
     {
       path: '/ventas',
       name: 'ventas',
-      component: MenuListView
+      component: () => import('../views/SalesView.vue')
     },
     {
       path: '/menus/:id_menu',

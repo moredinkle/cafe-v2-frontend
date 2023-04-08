@@ -25,22 +25,26 @@
 
     <v-col cols="12" md="10">
       <template v-if="editSelected">
-        <v-card rounded class="px-3">
-          <div class="d-flex justify-space-between align-center">
-            <h1>{{ menu.date }}</h1>
-            <span class="text-subtitle-1 text-red" >{{ menu.status }}</span>
+        <v-card rounded>
+          <div class="px-3">
+            <div class="d-flex justify-space-between align-center">
+              <h1>{{ menu.date }}</h1>
+              <span class="text-subtitle-1 text-red">{{ menu.status }}</span>
+            </div>
+            <template v-if="menu.status !== 'FINISHED'">
+              <menu-item-form @addMenuItem="addItemToMenu" />
+            </template>
+            <table-component
+              class="my-3"
+              :headers="tableHeaders"
+              :items="menuItems"
+              @deleteTableItem="openDeleteDialog"
+              @editTableItem="openEditDialog"
+              :deleteButton="menu.status === 'INACTIVE'"
+              :editButton="menu.status !== 'FINISHED'"
+              tableTitle="Menú"
+            />
           </div>
-          <menu-item-form @addMenuItem="addItemToMenu" />
-          <table-component
-            class="my-3"
-            :headers="tableHeaders"
-            :items="menuItems"
-            @deleteTableItem="openDeleteDialog"
-            @editTableItem="openEditDialog"
-            deleteButton
-            editButton
-            tableTitle="Menú"
-          />
         </v-card>
       </template>
 
@@ -88,8 +92,8 @@ import type { Menu } from "@/utils/types";
 import type { MenuItem } from "../utils/types";
 import { isProxy, toRaw } from "vue";
 import { useDisplay } from "vuetify";
-import { mapStores } from 'pinia'
-import { useMenuDataStore } from '../stores/menu-data-store';
+import { mapStores, mapActions } from "pinia";
+import { useMenuDataStore } from "../stores/menu-data-store";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
@@ -143,9 +147,10 @@ export default defineComponent({
       const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" } as const;
       const formattedDate = date.toLocaleDateString(undefined, options);
       return formattedDate.charAt(0).toLocaleUpperCase() + formattedDate.slice(1);
-    }
+    },
   },
   methods: {
+    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems"]),
     async getMenuData() {
       const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/complete`);
       this.menu = response.data.data.menu;
@@ -159,14 +164,14 @@ export default defineComponent({
     },
 
     selectReportTab() {
-      if(this.editSelected) {
+      if (this.editSelected) {
         this.editSelected = false;
       }
       this.reportSelected = true;
     },
 
     selectEditTab() {
-      if(this.reportSelected) {
+      if (this.reportSelected) {
         this.reportSelected = false;
       }
       this.editSelected = true;
@@ -176,7 +181,7 @@ export default defineComponent({
       const menuItem = item as MenuItem;
       menuItem.menuId = this.menuId;
       await axios.post(`${backendUri}/menu-items`, menuItem);
-      this.updateMenuItems();
+      this.checkActiveMenu();
     },
 
     openEditDialog(item: any) {
@@ -193,7 +198,7 @@ export default defineComponent({
       await axios.put(`${backendUri}/menu-items/${this.itemToEdit.id}`, this.itemToEdit);
       this.editDialog = false;
       this.itemToEdit = {} as MenuItem;
-      await this.updateMenuItems();
+      await this.checkActiveMenu();
     },
 
     openDeleteDialog(item: any) {
@@ -210,12 +215,20 @@ export default defineComponent({
       await axios.delete(`${backendUri}/menu-items/${this.itemToDelete.id}`);
       this.deleteDialog = false;
       this.itemToDelete = {} as MenuItem;
-      await this.updateMenuItems();
+      await this.checkActiveMenu();
+    },
+
+    async checkActiveMenu() {
+      if (this.menu.id === this.menuDataStoreStore.currentMenu.id) {
+        await this.updateActiveMenuItems(this.menu.id);
+      } else {
+        await this.updateMenuItems();
+      }
     },
   },
-  
+
   async created() {
     await this.getMenuData();
   },
-});
+});//aqui esta repitiendo menu e items
 </script>

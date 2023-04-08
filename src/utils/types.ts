@@ -10,4 +10,6 @@ export type MenuItem = {
     stock: number
     menuId?: string
     id?: string
+    quantity?: number
+    subtotal?: number
 }

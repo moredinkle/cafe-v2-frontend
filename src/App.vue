@@ -29,11 +29,11 @@ export default defineComponent({
     return {};
   },
   methods: {
-    ...mapActions(useMenuDataStore,["getCurrentMenuData", "updateMenuItems"]),
+    ...mapActions(useMenuDataStore,["getCurrentMenuData", "updateActiveMenuItems"]),
   },
   async created(){
     await this.getCurrentMenuData();
-    await this.updateMenuItems(this.menuDataStoreStore.menu.id as string);
+    await this.updateActiveMenuItems(this.menuDataStoreStore.currentMenu.id as string);
   }
 });
 </script>

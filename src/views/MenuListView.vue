@@ -13,6 +13,7 @@
         </v-row>
       </v-form>
     </v-col>
+
     <v-col cols="12" sm="6">
       <span class="text-h5 mb-1">Menú activo</span>
       <v-card
@@ -22,7 +23,9 @@
         variant="outlined"
       ></v-card>
     </v-col>
+  
   </v-row>
+
   <span class="text-h5">Menús pasados</span>
   <v-row class="my-2">
     <v-col cols="12" sm="4" md="3" v-for="menu in pastMenus" :key="menu.id">
