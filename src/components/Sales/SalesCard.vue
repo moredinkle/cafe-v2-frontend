@@ -1,7 +1,7 @@
 <template>
   <v-card :color="color" rounded class="px-2 py-2">
-    <span class="text-h5 font-weight-bold">{{ name }}</span> <br>
-    <span class="text-subtitle-2 font-weight-light">{{ price }} Bs</span>
+    <span class="text-h5 font-weight-bold">{{ item.name }}</span> <br>
+    <span class="text-subtitle-2 font-weight-light">{{ item.price }} Bs</span>
     <div class="d-flex justify-space-between align-center">
       <div class="d-flex align-center">
         <v-btn
@@ -33,6 +33,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import type { MenuItem } from '@/utils/types';
 
 export default defineComponent({
   name: "SalesView",
@@ -40,15 +41,11 @@ export default defineComponent({
   emits: ["addItemToOrder"],
   props: {
     color: String,
-    id: String,
-    name: String,
-    price: {
-      type: Number,
-      default: 0
-    }
+    item: {
+      type: Object as () => MenuItem,
+      default: {} as MenuItem,
+    },
   },
-  computed: {},
-
   data() {
     return {
       quantity: 1,
@@ -57,7 +54,7 @@ export default defineComponent({
   methods: {
     emitAddToOrder(){
       if(this.quantity > 0){
-        this.$emit('addItemToOrder', this.id, this.quantity);
+        this.$emit('addItemToOrder', this.item, this.quantity);
         this.quantity = 1;
       }
     }

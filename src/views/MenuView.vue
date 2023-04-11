@@ -121,5 +121,5 @@ export default defineComponent({
       this.getMenuData();
     }
   },
-}); //aqui esta repitiendo menu e items
+});
 </script>

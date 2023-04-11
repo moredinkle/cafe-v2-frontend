@@ -10,7 +10,11 @@ export const useMenuDataStore = defineStore({
     currentMenu: {} as Menu,
     currentMenuItems: [] as MenuItem[]
   }),
-  getters: {},
+  getters: {
+    stockFilteredItems(state) {
+      return state.currentMenuItems.filter(item => item.stock > 0);
+    },
+  },
   actions: {
     async updateActiveMenuItems() {
       const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/items`);
