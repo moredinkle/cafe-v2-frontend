@@ -27,12 +27,8 @@
       <template v-if="editSelected">
         <menu-edit :menu="menu" :menu-items="menuItems" @emit-update-items="updateMenuItems" />
       </template>
-
       <template v-else>
-        <v-card rounded class="px-3">
-          <h1>{{ menu.date }}</h1>
-          <h3>Aqui van cuentas</h3>
-        </v-card>
+        <menu-report :menu="menu" :sales-report="salesReport" />
       </template>
     </v-col>
   </v-row>
@@ -41,18 +37,20 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import MenuEdit from "@/components/Menu/MenuEdit.vue";
-import type { Menu } from "@/utils/types";
-import type { MenuItem } from "../utils/types";
+import MenuReport from "@/components/Menu/MenuReport.vue";
+import type { Menu, MenuItem, SalesReportRow } from "@/utils/types";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
 import axios from "axios";
+import { toReportRow } from "../utils/types";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
   name: "MenuView",
   components: {
     MenuEdit,
+    MenuReport,
   },
   setup() {
     const { mdAndUp } = useDisplay();
@@ -66,6 +64,7 @@ export default defineComponent({
       reportSelected: false,
       menu: {} as Menu,
       menuItems: [] as MenuItem[],
+      salesReport: [] as SalesReportRow[],
       menuId: this.$route.params.id_menu as string,
     };
   },
@@ -85,6 +84,13 @@ export default defineComponent({
       this.menu = response.data.data.menu;
       this.menuItems = response.data.data.items;
       this.menu.date = this.formattedDate;
+    },
+
+    async getSalesReport() {
+      const response = await axios.get(`${backendUri}/menus/${this.menu.id}/sales-report`);
+      this.salesReport = response.data.data.map((row: any) => {
+        return toReportRow(row);
+      });
     },
 
     async updateMenuItems() {
@@ -112,14 +118,14 @@ export default defineComponent({
     },
   },
   async created() {
-    if(this.menuId === this.menuDataStoreStore.currentMenu.id){
-      this.menu = {...this.menuDataStoreStore.currentMenu};
+    if (this.menuId === this.menuDataStoreStore.currentMenu.id) {
+      this.menu = { ...this.menuDataStoreStore.currentMenu };
       this.menuItems = [...this.menuDataStoreStore.currentMenuItems];
       this.menu.date = this.formattedDate;
+    } else {
+      await this.getMenuData();
     }
-    else{
-      this.getMenuData();
-    }
+    await this.getSalesReport();
   },
 });
 </script>

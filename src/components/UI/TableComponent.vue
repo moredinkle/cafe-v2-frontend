@@ -1,6 +1,6 @@
 <template>
   <v-card rounded>
-    <v-data-table :headers="headers" :items="items" density="compact">
+    <v-data-table :headers="headers" :items="items" density="compact" items-per-page="30">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>{{ tableTitle }}</v-toolbar-title>

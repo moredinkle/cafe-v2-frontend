@@ -30,3 +30,21 @@ export type OrderItem = {
   id?: string;
 }
 
+export type SalesReportRow = {
+  id: string,
+  name: string,
+  price: number,
+  subtotal: number,
+  sold: number
+}
+
+export function toReportRow(item: any){
+  return {
+    id: item.id,
+    name: item.name,
+    price: parseFloat(item.price as unknown as string),
+    subtotal: parseFloat(item.subtotal as unknown as string),
+    sold: item.sold,
+  } as SalesReportRow;
+}
+

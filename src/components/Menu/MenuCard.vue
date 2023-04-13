@@ -4,6 +4,7 @@
 </template>
 
 <script lang="ts">
+import type { Menu } from "@/utils/types";
 import { defineComponent } from "vue";
 
 export default defineComponent({
@@ -17,21 +18,17 @@ export default defineComponent({
 
   },
   props: {
-    date: {
-      type: String,
-      default: ''
-    },
-    menuId: {
-      type: String,
-      default: ''
+    menu: {
+      type: Object as () => Menu,
+      default: {} as Menu,
     },
   },
   methods: {
     goToMenu(){
-      this.$router.push(`/menus/${this.menuId}`);
+      this.$router.push(`/menus/${this.menu.id}`);
     },
     displayData(){
-      const date = new Date(this.date);
+      const date = new Date(this.menu.date);
       this.title = date.toLocaleDateString();
       this.dayOfMenu = this.days[date.getDay()];
     }

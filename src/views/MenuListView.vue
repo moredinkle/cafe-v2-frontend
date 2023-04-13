@@ -29,7 +29,7 @@
   <span class="text-h5">Menús pasados</span>
   <v-row class="my-2">
     <v-col cols="12" sm="4" md="3" v-for="menu in pastMenus" :key="menu.id">
-      <menu-card :date="menu.date" :menuId="menu.id" />
+      <menu-card :menu="menu" />
     </v-col>
   </v-row>
 </template>

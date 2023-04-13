@@ -55,7 +55,6 @@ import axios from "axios";
 import type { Menu } from "@/utils/types";
 import type { MenuItem } from "../../utils/types";
 import { isProxy, toRaw } from "vue";
-import { useDisplay } from "vuetify";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
@@ -75,10 +74,6 @@ export default defineComponent({
       type: Array as () => MenuItem[],
       default: {} as MenuItem,
     },
-  },
-  setup() {
-    const { mdAndUp } = useDisplay();
-    return { mdAndUp };
   },
   data() {
     return {
@@ -106,14 +101,6 @@ export default defineComponent({
         },
       ],
     };
-  },
-  computed: {
-    formattedDate() {
-      const date = new Date(this.menu.date);
-      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" } as const;
-      const formattedDate = date.toLocaleDateString(undefined, options);
-      return formattedDate.charAt(0).toLocaleUpperCase() + formattedDate.slice(1);
-    },
   },
   methods: {
     async addItemToMenu(item: any) {
