@@ -7,6 +7,7 @@
       </div>
       <span class="text-h6 text-indigo-darken-4">Total recaudado: {{ totalSales }} Bs</span>
       <table-component class="my-3" :headers="tableHeaders" :items="salesReport" tableTitle="Ventas del dia" />
+      <manual-save :report="salesReport" />
     </div>
   </v-card>
 
@@ -23,6 +24,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import TableComponent from "@/components/UI/TableComponent.vue";
+import ManualSave from "./ManualSave.vue";
 import PopupDialog from "../UI/PopupDialog.vue";
 import type { Menu, SalesReportRow } from "@/utils/types";
 //   import { isProxy, toRaw } from "vue";
@@ -32,6 +34,7 @@ export default defineComponent({
   components: {
     TableComponent,
     PopupDialog,
+    ManualSave
   },
   props: {
     menu: {
@@ -65,5 +68,7 @@ export default defineComponent({
     };
   },
   methods: {}
+  //TODO revisar lo de servidores, todo lo que tenga que ver con servidores (ventas y reporte)
+  //extras(todo) y cierre manual(ventas totales al final, select y poner cuantas vendieron)
 });
 </script>
