@@ -34,6 +34,7 @@ export type SalesReportRow = {
   id: string,
   name: string,
   price: number,
+  stock: number,
   sold: number,
   subtotal: number,
 }
@@ -45,6 +46,7 @@ export function toReportRow(item: any){
     price: parseFloat(item.price as unknown as string),
     subtotal: parseFloat(item.subtotal as unknown as string),
     sold: parseInt(item.sold),
+    stock: parseInt(item.stock)
   } as SalesReportRow;
 }
 

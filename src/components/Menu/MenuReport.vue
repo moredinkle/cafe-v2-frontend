@@ -6,8 +6,20 @@
         <span class="text-subtitle-1 text-red">{{ menu.status }}</span>
       </div>
       <span class="text-h6 text-indigo-darken-4">Total recaudado: {{ totalSales }} Bs</span>
-      <table-component class="my-3" :headers="tableHeaders" :items="salesReport" tableTitle="Ventas del dia" />
-      <manual-save :report="salesReport" />
+      <div class="d-flex align-center mt-2">
+        <v-btn class="mr-2" color="indigo-darken-3" :variant="currentView === 0 ? 'elevated' : 'outlined'" @click="currentView=0">Resumen</v-btn>
+        <v-btn class="mr-2" color="indigo-darken-3" :variant="currentView === 1 ? 'elevated' : 'outlined'" @click="currentView=1">Extras</v-btn>
+        <v-btn class="mr-2" color="indigo-darken-3" :variant="currentView === 2 ? 'elevated' : 'outlined'" @click="currentView=2">Cierre manual</v-btn>
+      </div>
+      <template v-if="currentView === 0">
+        <table-component class="my-3" :headers="tableHeaders" :items="salesReport" tableTitle="Ventas del dia" />
+      </template>
+      <template v-else-if="currentView === 1">
+        <menu-extras />
+      </template>
+      <template v-else-if="currentView === 2">
+        <manual-save :report="salesReport" />
+      </template>
     </div>
   </v-card>
 
@@ -25,6 +37,7 @@
 import { defineComponent } from "vue";
 import TableComponent from "@/components/UI/TableComponent.vue";
 import ManualSave from "./ManualSave.vue";
+import MenuExtras from "./MenuExtras.vue";
 import PopupDialog from "../UI/PopupDialog.vue";
 import type { Menu, SalesReportRow } from "@/utils/types";
 //   import { isProxy, toRaw } from "vue";
@@ -34,7 +47,8 @@ export default defineComponent({
   components: {
     TableComponent,
     PopupDialog,
-    ManualSave
+    ManualSave,
+    MenuExtras
   },
   props: {
     menu: {
@@ -55,6 +69,7 @@ export default defineComponent({
   },
   data() {
     return {
+      currentView: 0,
       itemToDelete: {} as SalesReportRow,
       itemToEdit: {} as SalesReportRow,
       deleteDialog: false,
@@ -68,7 +83,7 @@ export default defineComponent({
     };
   },
   methods: {}
+  //extras(crud),  revisar los estados, finished e inactive
   //TODO revisar lo de servidores, todo lo que tenga que ver con servidores (ventas y reporte)
-  //extras(todo) y cierre manual(ventas totales al final, select y poner cuantas vendieron)
 });
 </script>

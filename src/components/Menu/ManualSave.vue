@@ -22,6 +22,7 @@
             <span>Nombre: {{ selectedItem.name }} </span>
             <span>Vendidos: {{ selectedItem.sold }} </span>
             <span>Subtotal: {{ selectedItem.subtotal }} </span>
+            <span>Stock: {{ selectedItem.stock }} </span>
           </v-card-text>
         </v-card>
       </v-col>
@@ -42,6 +43,13 @@
       <v-btn color="success" size="large" @click="saveChanges">Guardar cambios</v-btn>
     </div>
   </div>
+
+  <v-snackbar v-model="snackbar" timeout="2000" :color="snackbarColor">
+    {{ snackbarText }}
+    <template v-slot:actions>
+      <v-btn variant="text" @click="snackbar = false"> Cerrar </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts">
@@ -84,6 +92,9 @@ export default defineComponent({
           return "Debe ser mayor a 0";
         },
       ],
+      snackbarColor: "",
+      snackbarText: "",
+      snackbar: false,
       manualSaves: [] as SalesReportRow[],
       tableHeaders: [
         { title: "Nombre", align: "start", key: "name" },
@@ -95,12 +106,22 @@ export default defineComponent({
   },
   methods: {
     addToManualSaves() {
+      if(this.manualSaveSold > this.selectedItem.stock) {
+        this.displaySnackbar("error", "No alcanza jefe");
+        return;
+      }
       const manual = { ...this.selectedItem };
       manual.sold = this.manualSaveSold;
       manual.subtotal = manual.price * this.manualSaveSold;
       this.manualSaves.push({ ...manual });
       this.selectedItem = {} as SalesReportRow;
       this.manualSaveSold = 0;
+    },
+
+    displaySnackbar(color: string, text: string) {
+      this.snackbarColor = color;
+      this.snackbarText = text;
+      this.snackbar = true;
     },
 
     async saveChanges() {
@@ -124,6 +145,8 @@ export default defineComponent({
               };
             await axios.post(`${backendUri}/order-items`, orderItem);
           }
+          this.displaySnackbar("info", "Cambios guardados");
+          this.manualSaves = [];
         }
       } catch (error) {
         alert("Error al guardar");
