@@ -39,6 +39,24 @@ export type SalesReportRow = {
   subtotal: number,
 }
 
+export type MenuExtra = {
+  description: string,
+  amount: number,
+  type: "GASTO" | "INGRESO",
+  menuId: string,
+  id: string
+}
+
+export function toExtra(item: any){
+  return {
+    description: item.description,
+    amount: parseFloat(item.amount),
+    type: item.type,
+    menuId: item.menuId,
+    id: item.id
+  } as MenuExtra
+}
+
 export function toReportRow(item: any){
   return {
     id: item.id,

@@ -83,7 +83,7 @@ export default defineComponent({
     };
   },
   methods: {}
-  //extras(crud),  revisar los estados, finished e inactive
+  //revisar los estados, finished e inactive
   //TODO revisar lo de servidores, todo lo que tenga que ver con servidores (ventas y reporte)
 });
 </script>

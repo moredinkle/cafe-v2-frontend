@@ -7,8 +7,8 @@
           elevation="4"
           prepend-icon="mdi-pencil-box-outline"
           class="my-3 d-flex justify-start mx-1"
-          :variant="editSelected ? 'elevated' : 'outlined'"
-          @click="selectEditTab()"
+          :variant="selectedTab === 0 ? 'elevated' : 'outlined'"
+          @click="selectedTab = 0"
           >Editar</v-btn
         >
         <v-btn
@@ -16,15 +16,15 @@
           elevation="4"
           prepend-icon="mdi-notebook-outline"
           class="d-flex justify-start mx-1"
-          :variant="reportSelected ? 'elevated' : 'outlined'"
-          @click="selectReportTab()"
+          :variant="selectedTab === 1 ? 'elevated' : 'outlined'"
+          @click="selectedTab = 1"
           >Cuentas</v-btn
         >
       </div>
     </v-col>
 
     <v-col cols="12" md="10">
-      <template v-if="editSelected">
+      <template v-if="selectedTab===1">
         <menu-edit :menu="menu" :menu-items="menuItems" @emit-update-items="updateMenuItems" />
       </template>
       <template v-else>
@@ -60,7 +60,7 @@ export default defineComponent({
     return {
       smTabsClass: "d-flex justify-start align-center",
       mdTabsClass: "d-flex flex-column justify-center",
-      editSelected: true,
+      selectedTab: 0,
       reportSelected: false,
       menu: {} as Menu,
       menuItems: [] as MenuItem[],
@@ -78,7 +78,7 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems"]),
+    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems", "selectMenu"]),
     async getMenuData() {
       const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/complete`);
       this.menu = response.data.data.menu;
@@ -87,7 +87,7 @@ export default defineComponent({
     },
 
     async getSalesReport() {
-      const response = await axios.get(`${backendUri}/menus/${this.menu.id}/sales-report`);
+      const response = await axios.get(`${backendUri}/menus/${this.menu.id}/sales`);
       this.salesReport = response.data.data.map((row: any) => {
         return toReportRow(row);
       });
@@ -103,19 +103,6 @@ export default defineComponent({
       }
     },
 
-    selectReportTab() {
-      if (this.editSelected) {
-        this.editSelected = false;
-      }
-      this.reportSelected = true;
-    },
-
-    selectEditTab() {
-      if (this.reportSelected) {
-        this.reportSelected = false;
-      }
-      this.editSelected = true;
-    },
   },
   async created() {
     if (this.menuId === this.menuDataStoreStore.currentMenu.id) {
@@ -125,6 +112,7 @@ export default defineComponent({
     } else {
       await this.getMenuData();
     }
+    this.selectMenu(this.menu);
     await this.getSalesReport();
   },
 });

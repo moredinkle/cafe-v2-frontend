@@ -1,5 +1,5 @@
 <template>
-  <span class="text-h6">Extras</span>
+  <span class="text-h6 my-3">Añadir extras</span>
   <v-form @submit.prevent>
     <v-row>
       <v-col cols="12" md="4">
@@ -21,7 +21,7 @@
         ></v-text-field>
       </v-col>
       <v-col cols="12" sm="4">
-        <v-select v-model="orderType" label="Tipo" :items="['Gasto', 'Ingreso']" variant="outlined"></v-select>
+        <v-select v-model="orderType" label="Tipo" :items="['GASTO', 'INGRESO']" variant="outlined"></v-select>
       </v-col>
     </v-row>
     <div class="d-flex justify-end">
@@ -39,19 +39,19 @@ export default defineComponent({
   components: {},
   data() {
     return {
-      orderType: "Gasto",
+      orderType: "GASTO",
       description: "",
       descriptionRules: [
         (value: string) => {
-          if (value?.length > 3) return true;
-          return "First name must be at least 3 characters.";
+          if (value?.length > 0) return true;
+          return "No puede estar vacio";
         },
       ],
       amount: 0,
       amountRules: [
         (value: number) => {
           if (value > 0) return true;
-          return "Precio debe ser mayor a 0";
+          return "Monto debe ser mayor a 0";
         },
       ],
       menuId: this.$route.params.id_menu,

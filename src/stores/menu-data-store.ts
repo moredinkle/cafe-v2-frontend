@@ -8,7 +8,8 @@ export const useMenuDataStore = defineStore({
   id: 'menuDataStore',
   state: () => ({
     currentMenu: {} as Menu,
-    currentMenuItems: [] as MenuItem[]
+    currentMenuItems: [] as MenuItem[],
+    selectedMenu: {} as Menu
   }),
   getters: {
     stockFilteredItems(state) {
@@ -31,6 +32,9 @@ export const useMenuDataStore = defineStore({
       } catch (error) {
         alert("No active menu");
       }
+    },
+    selectMenu(menu: Menu){
+      this.selectedMenu = menu;
     }
   }
 })
