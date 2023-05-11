@@ -1,8 +1,12 @@
 <template>
-  <div class="my-6">
-    <span class="text-h6 text-green-darken-3">Total ingresos: {{ incomeTotal }}</span> <br>
-    <span class="text-h6 text-orange-darken-3">Total gastos: {{ spendingTotal }}</span> <br>
-    <menu-extras-form @addMenuExtra="addExtra" />
+  <div>
+    <div class="my-4">
+      <span class="text-h6 text-green-darken-3">Total ingresos: {{ incomeTotal }}</span> <br>
+      <span class="text-h6 text-orange-darken-3">Total gastos: {{ spendingTotal }}</span>
+    </div>
+    <template v-if="menuDataStoreStore.selectedMenu.status !== 'FINISHED'">
+      <menu-extras-form @addMenuExtra="addExtra" />
+    </template>
     <table-component
       :headers="tableHeaders"
       :items="extras"
@@ -10,8 +14,8 @@
       class="my-5"
       @deleteTableItem="openDeleteDialog"
       @editTableItem="openEditDialog"
-      :deleteButton="menuDataStoreStore.currentMenu.status !== 'FINISHED'"
-      :editButton="menuDataStoreStore.currentMenu.status !== 'FINISHED'"
+      :deleteButton="menuDataStoreStore.selectedMenu.status !== 'FINISHED'"
+      :editButton="menuDataStoreStore.selectedMenu.status !== 'FINISHED'"
     />
   </div>
   <popup-dialog
@@ -93,7 +97,7 @@ export default defineComponent({
   },
   methods: {
     async getExtras(){
-      const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.currentMenu.id}/extras`);
+      const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`);
       this.extras = response.data.data.map((item: any) => {
         const it = toExtra(item);
         item.type === "GASTO" ? this.spendingTotal += it.amount : this.incomeTotal += it.amount;

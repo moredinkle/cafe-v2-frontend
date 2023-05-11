@@ -1,5 +1,5 @@
 <template>
-  <v-card :title="title" :subtitle="dayOfMenu" :text="cardText" variant="outlined" @click.stop="goToMenu()">
+  <v-card :title="title" :subtitle="dayOfMenu" text="" variant="outlined" @click.stop="goToMenu()">
   </v-card>
 </template>
 
@@ -11,7 +11,6 @@ export default defineComponent({
   data()  {
     return {
       dayOfMenu: '',
-      cardText: `Total recaudado: 100Bs`,
       title: '',
       days: ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado']
     }

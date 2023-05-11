@@ -24,12 +24,36 @@
     </v-col>
 
     <v-col cols="12" md="10">
-      <template v-if="selectedTab===1">
-        <menu-edit :menu="menu" :menu-items="menuItems" @emit-update-items="updateMenuItems" />
-      </template>
-      <template v-else>
-        <menu-report :menu="menu" :sales-report="salesReport" />
-      </template>
+      <v-card rounded>
+        <div class="px-3">
+          <div class="d-flex flex-wrap justify-space-between align-center mt-2">
+            <div class="d-flex flex-column justify-end">
+              <h2>{{ formattedDate }}</h2>
+              <span class="text-subtitle-2">{{ menuDataStoreStore.selectedMenu.status }}</span>
+            </div>
+            <template v-if="menuDataStoreStore.selectedMenu.status === 'INACTIVE'">
+            <v-btn
+              color="green-darken-2"
+              @click="updateMenuStatus('ACTIVE')"
+              >Marcar como activo</v-btn
+            >
+            </template>
+            <template v-else-if="menuDataStoreStore.selectedMenu.status === 'ACTIVE'">
+            <v-btn
+              color="red-darken-2"
+              @click="updateMenuStatus('FINISHED')"
+              >Marcar como terminado</v-btn
+            >
+            </template>
+          </div>
+          <template v-if="selectedTab === 0">
+            <menu-edit :menu-items="menuItems" @emit-update-items="updateMenuItems" />
+          </template>
+          <template v-else>
+            <menu-report :sales-report="salesReport" />
+          </template>
+        </div>
+      </v-card>
     </v-col>
   </v-row>
 </template>
@@ -70,45 +94,50 @@ export default defineComponent({
   },
   computed: {
     ...mapStores(useMenuDataStore),
-    formattedDate() {
-      const date = new Date(this.menu.date);
+    selectedMenu(): Menu {
+      return this.menuDataStoreStore.selectedMenu;
+    },
+    formattedDate(): string {
+      const date = new Date(this.menuDataStoreStore.selectedMenu.date);
       const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" } as const;
       const formattedDate = date.toLocaleDateString(undefined, options);
       return formattedDate.charAt(0).toLocaleUpperCase() + formattedDate.slice(1);
     },
   },
   methods: {
-    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems", "selectMenu"]),
+    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems", "selectMenu", "setCurrentMenu"]),
     async getMenuData() {
-      const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/complete`);
+      const response = await axios.get(`${backendUri}/menus/${this.menuId}/complete`);
       this.menu = response.data.data.menu;
       this.menuItems = response.data.data.items;
-      this.menu.date = this.formattedDate;
     },
 
     async getSalesReport() {
-      const response = await axios.get(`${backendUri}/menus/${this.menu.id}/sales`);
+      const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/sales`);
       this.salesReport = response.data.data.map((row: any) => {
+        //continuar refactor menu y selecteed menu
         return toReportRow(row);
       });
     },
 
     async updateMenuItems() {
-      if (this.menu.status === "ACTIVE") {
-        await this.updateActiveMenuItems();
-        this.menuItems = [...this.menuDataStoreStore.currentMenuItems];
-      } else {
-        const response = await axios.get(`${backendUri}/menus/${this.$route.params.id_menu}/items`);
-        this.menuItems = response.data.data;
-      }
+      const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/items`);
+      this.menuItems = response.data.data;
     },
 
+    async updateMenuStatus(newStatus: "INACTIVE" | "ACTIVE" | "FINISHED") {
+      const response = await axios.put(`${backendUri}/menus/${this.selectedMenu.id}`, {status: newStatus});
+      this.selectMenu(response.data.updatedMenu as Menu);
+      if(this.menuDataStoreStore.currentMenu.id === this.menuDataStoreStore.selectedMenu.id) {
+        this.setCurrentMenu(response.data.updatedMenu as Menu);
+      }
+    },
   },
+
   async created() {
     if (this.menuId === this.menuDataStoreStore.currentMenu.id) {
       this.menu = { ...this.menuDataStoreStore.currentMenu };
       this.menuItems = [...this.menuDataStoreStore.currentMenuItems];
-      this.menu.date = this.formattedDate;
     } else {
       await this.getMenuData();
     }

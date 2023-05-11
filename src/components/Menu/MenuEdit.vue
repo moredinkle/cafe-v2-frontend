@@ -1,10 +1,4 @@
 <template>
-  <v-card rounded>
-    <div class="px-3">
-      <div class="d-flex justify-space-between align-center">
-        <h1>{{ menu.date }}</h1>
-        <span class="text-subtitle-1 text-red">{{ menu.status }}</span>
-      </div>
       <template v-if="menu.status !== 'FINISHED'">
         <menu-item-form @addMenuItem="addItemToMenu" />
       </template>
@@ -18,8 +12,6 @@
         :editButton="menu.status !== 'FINISHED'"
         tableTitle="Menú"
       />
-    </div>
-  </v-card>
 
   <popup-dialog
     :dialog="deleteDialog"
@@ -55,6 +47,8 @@ import axios from "axios";
 import type { Menu } from "@/utils/types";
 import type { MenuItem } from "../../utils/types";
 import { isProxy, toRaw } from "vue";
+import { useMenuDataStore } from "@/stores/menu-data-store";
+import { mapStores } from "pinia";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
@@ -64,15 +58,23 @@ export default defineComponent({
     TableComponent,
     PopupDialog,
   },
-  emits: ["emitUpdateItems", "emitUpdateActiveItems"],
+  emits: ["emitUpdateItems", "emitUpdateActiveItems", "markAsActive"],
   props: {
-    menu: {
-      type: Object as () => Menu,
-      default: {} as Menu,
-    },
     menuItems: {
       type: Array as () => MenuItem[],
       default: {} as MenuItem,
+    },
+  },
+  computed: {
+    ...mapStores(useMenuDataStore),
+    menu(): Menu {
+      return this.menuDataStoreStore.selectedMenu;
+    },
+    formattedDate(): string {
+      const date = new Date(this.menuDataStoreStore.selectedMenu.date);
+      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" } as const;
+      const formattedDate = date.toLocaleDateString(undefined, options);
+      return formattedDate.charAt(0).toLocaleUpperCase() + formattedDate.slice(1);
     },
   },
   data() {
@@ -142,6 +144,10 @@ export default defineComponent({
       this.deleteDialog = false;
       this.itemToDelete = {} as MenuItem;
       this.$emit("emitUpdateItems");
+    },
+
+    markAsActive() {
+      this.$emit("markAsActive");
     },
   },
 });

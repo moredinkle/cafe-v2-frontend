@@ -35,6 +35,9 @@ export const useMenuDataStore = defineStore({
     },
     selectMenu(menu: Menu){
       this.selectedMenu = menu;
+    },
+    setCurrentMenu(menu: Menu){
+      this.currentMenu = menu;
     }
   }
 })

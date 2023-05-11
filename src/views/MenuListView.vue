@@ -16,14 +16,14 @@
 
     <v-col cols="12" sm="6">
       <span class="text-h5 mb-1">Menú activo</span>
-      <v-card
-        :title="currentMenuDate"
-        text="Total recaudado: 100 Bs"
-        @click="goToCurrentMenu()"
-        variant="outlined"
-      ></v-card>
+        <v-card
+          :title="currentMenu.id ? currentMenuDate : 'Sin menú activo'"
+          :text="dayOfMenu"
+          @click="goToCurrentMenu()"
+          variant="outlined"
+          :disabled="currentMenu.id ? false : true"
+        ></v-card>
     </v-col>
-  
   </v-row>
 
   <span class="text-h5">Menús pasados</span>
@@ -54,6 +54,8 @@ export default defineComponent({
       newMenuDate: new Date().toISOString().slice(0, 10),
       pastMenus: [] as Menu[],
       currentMenu: {} as Menu,
+      days: ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'],
+      dayOfMenu: ''
     };
   },
   computed: {
@@ -76,6 +78,8 @@ export default defineComponent({
       rawMenus.map((menu: Menu) => {
         if (menu.status === "ACTIVE") {
           this.currentMenu = menu;
+          const date = new Date(this.currentMenu.date);
+          this.dayOfMenu = this.days[date.getDay()];
         } else {
           this.pastMenus.push(menu);
         }
