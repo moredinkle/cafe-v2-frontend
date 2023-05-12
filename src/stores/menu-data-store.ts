@@ -38,6 +38,9 @@ export const useMenuDataStore = defineStore({
     },
     setCurrentMenu(menu: Menu){
       this.currentMenu = menu;
+    },
+    setCurrentMenuItems(items: MenuItem[]){
+      this.currentMenuItems = items;
     }
   }
 })

@@ -28,7 +28,7 @@
         <table-component class="my-3" :headers="tableHeaders" :items="salesReport" tableTitle="Ventas del dia" />
       </template>
       <template v-else-if="currentView === 1">
-        <menu-extras />
+        <menu-extras :extras="extras" @update-extras="emitUpdateExtras"/>
       </template>
       <template v-else-if="currentView === 2">
         <manual-save :report="salesReport" />
@@ -50,13 +50,13 @@ import TableComponent from "@/components/UI/TableComponent.vue";
 import ManualSave from "./ManualSave.vue";
 import MenuExtras from "./MenuExtras.vue";
 import PopupDialog from "../UI/PopupDialog.vue";
-import type { Menu, SalesReportRow } from "@/utils/types";
+import type { Menu, SalesReportRow, MenuExtra } from "@/utils/types";
 import { useMenuDataStore } from "@/stores/menu-data-store";
 import { mapStores } from "pinia";
 
 export default defineComponent({
   name: "MenuReport",
-  emits: ["markAsCompleted"],
+  emits: ["markAsCompleted", "emitUpdateExtras"],
   components: {
     TableComponent,
     PopupDialog,
@@ -67,6 +67,10 @@ export default defineComponent({
     salesReport: {
       type: Array as () => SalesReportRow[],
       default: {} as SalesReportRow,
+    },
+    extras: {
+      type: Array as () => MenuExtra[],
+      default: {} as MenuExtra,
     },
   },
   computed: {
@@ -96,9 +100,11 @@ export default defineComponent({
     };
   },
   methods: {
+    emitUpdateExtras(){
+      this.$emit("emitUpdateExtras");
+    }
   },
   //TODO
-  //refactor requests extras y sales (ponerlo en menuView para que no rehaga el request cada vez)
   //refactor uris backend
   //servidores --> todo lo que tenga que ver con servidores (ventas y reporte)
 });

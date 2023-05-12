@@ -50,7 +50,7 @@
             <menu-edit :menu-items="menuItems" @emit-update-items="updateMenuItems" />
           </template>
           <template v-else>
-            <menu-report :sales-report="salesReport" />
+            <menu-report :sales-report="salesReport" :extras="extras" @emit-update-extras="getExtras"/>
           </template>
         </div>
       </v-card>
@@ -62,12 +62,11 @@
 import { defineComponent } from "vue";
 import MenuEdit from "@/components/Menu/MenuEdit.vue";
 import MenuReport from "@/components/Menu/MenuReport.vue";
-import type { Menu, MenuItem, SalesReportRow } from "@/utils/types";
+import { toExtra, toReportRow, type MenuExtra, type Menu, type MenuItem, type SalesReportRow } from "@/utils/types";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
 import axios from "axios";
-import { toReportRow } from "../utils/types";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
@@ -87,6 +86,7 @@ export default defineComponent({
       selectedTab: 0,
       reportSelected: false,
       menu: {} as Menu,
+      extras: [] as MenuExtra[],
       menuItems: [] as MenuItem[],
       salesReport: [] as SalesReportRow[],
       menuId: this.$route.params.id_menu as string,
@@ -115,8 +115,15 @@ export default defineComponent({
     async getSalesReport() {
       const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/sales`);
       this.salesReport = response.data.data.map((row: any) => {
-        //continuar refactor menu y selecteed menu
         return toReportRow(row);
+      });
+    },
+    
+    async getExtras(){
+      const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`);
+      this.extras = response.data.data.map((item: any) => {
+        const it = toExtra(item);
+        return it;
       });
     },
 
@@ -127,9 +134,9 @@ export default defineComponent({
 
     async updateMenuStatus(newStatus: "INACTIVE" | "ACTIVE" | "FINISHED") {
       const response = await axios.put(`${backendUri}/menus/${this.selectedMenu.id}`, {status: newStatus});
-      this.selectMenu(response.data.updatedMenu as Menu);
-      if(this.menuDataStoreStore.currentMenu.id === this.menuDataStoreStore.selectedMenu.id) {
+      if(newStatus === "ACTIVE" && this.menuDataStoreStore.currentMenu.id === this.menuId) {
         this.setCurrentMenu(response.data.updatedMenu as Menu);
+        this.setCurrentMenuItems(this.menuItems);
       }
     },
   },
@@ -143,6 +150,7 @@ export default defineComponent({
     }
     this.selectMenu(this.menu);
     await this.getSalesReport();
+    await this.getExtras();
   },
 });
 </script>

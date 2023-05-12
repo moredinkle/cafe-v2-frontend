@@ -53,24 +53,39 @@ import type { MenuExtra } from "@/utils/types";
 import axios from "axios";
 import { useMenuDataStore } from "@/stores/menu-data-store";
 import { mapStores } from "pinia";
-import { toExtra } from '../../utils/types';
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
   name: "MenuExtras",
+  emits: ["updateExtras"],
   components: {
     MenuExtrasForm,
     TableComponent,
     PopupDialog
   },
+  props:{
+    extras: {
+      type: Array as () => MenuExtra[],
+      default: {} as MenuExtra,
+    },
+  },
   computed:{
-    ...mapStores(useMenuDataStore)
+    ...mapStores(useMenuDataStore),
+    incomeTotal(): number{
+      let sum = this.extras.reduce( (total, extra) => {
+        return extra.type === "INGRESO" ? total + extra.amount : total + 0;
+      }, 0)
+      return sum;
+    },
+    spendingTotal(): number{
+      let sum = this.extras.reduce( (total, extra) => {
+        return extra.type === "GASTO" ? total + extra.amount : total + 0;
+      }, 0)
+      return sum;
+    },
   },
   data() {
     return {
-      extras: [] as MenuExtra[],
-      incomeTotal: 0,
-      spendingTotal: 0,
       itemToEdit: {} as MenuExtra,
       itemToDelete: {} as MenuExtra,
       editDialog: false,
@@ -96,18 +111,9 @@ export default defineComponent({
     };
   },
   methods: {
-    async getExtras(){
-      const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`);
-      this.extras = response.data.data.map((item: any) => {
-        const it = toExtra(item);
-        item.type === "GASTO" ? this.spendingTotal += it.amount : this.incomeTotal += it.amount;
-        return it;
-      });
-    },
-
     async addExtra(extra: MenuExtra) {
       await axios.post(`${backendUri}/menu-extras`, extra);
-      await this.getExtras();
+      this.$emit("updateExtras");
     },
 
     openEditDialog(item: any) {
@@ -124,7 +130,7 @@ export default defineComponent({
       await axios.put(`${backendUri}/menu-extras/${this.itemToEdit.id}`, this.itemToEdit);
       this.editDialog = false;
       this.itemToEdit = {} as MenuExtra;
-      await this.getExtras();
+      this.$emit("updateExtras");
     },
 
     openDeleteDialog(item: any) {
@@ -141,11 +147,8 @@ export default defineComponent({
       await axios.delete(`${backendUri}/menu-extras/${this.itemToDelete.id}`);
       this.deleteDialog = false;
       this.itemToDelete = {} as MenuExtra;
-      await this.getExtras();
+      this.$emit("updateExtras");
     },
   },
-  async created(){
-    await this.getExtras();
-  }
 });
 </script>
