@@ -105,7 +105,6 @@ export default defineComponent({
     }
   },
   //TODO
-  //refactor uris backend
   //servidores --> todo lo que tenga que ver con servidores (ventas y reporte)
 });
 </script>

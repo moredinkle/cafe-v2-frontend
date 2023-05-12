@@ -143,7 +143,7 @@ export default defineComponent({
                 menuItemId: item.id || "",
                 orderId: orderId,
               };
-            await axios.post(`${backendUri}/order-items`, orderItem);
+            await axios.post(`${backendUri}/orders/${orderId}/items`, orderItem);
           }
           this.displaySnackbar("info", "Cambios guardados");
           this.manualSaves = [];

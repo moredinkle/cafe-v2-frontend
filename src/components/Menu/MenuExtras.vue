@@ -112,7 +112,7 @@ export default defineComponent({
   },
   methods: {
     async addExtra(extra: MenuExtra) {
-      await axios.post(`${backendUri}/menu-extras`, extra);
+      await axios.post(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`, extra);
       this.$emit("updateExtras");
     },
 
@@ -127,7 +127,7 @@ export default defineComponent({
     },
 
     async editItem() {
-      await axios.put(`${backendUri}/menu-extras/${this.itemToEdit.id}`, this.itemToEdit);
+      await axios.put(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras/${this.itemToEdit.id}`, this.itemToEdit);
       this.editDialog = false;
       this.itemToEdit = {} as MenuExtra;
       this.$emit("updateExtras");
@@ -144,7 +144,7 @@ export default defineComponent({
     },
 
     async deleteItem() {
-      await axios.delete(`${backendUri}/menu-extras/${this.itemToDelete.id}`);
+      await axios.delete(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras/${this.itemToDelete.id}`);
       this.deleteDialog = false;
       this.itemToDelete = {} as MenuExtra;
       this.$emit("updateExtras");

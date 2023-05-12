@@ -108,7 +108,7 @@ export default defineComponent({
     async addItemToMenu(item: any) {
       const menuItem = item as MenuItem;
       menuItem.menuId = this.menuId;
-      await axios.post(`${backendUri}/menu-items`, menuItem);
+      await axios.post(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/items`, menuItem);
       this.$emit("emitUpdateItems");
     },
 
@@ -123,7 +123,7 @@ export default defineComponent({
     },
 
     async editItem() {
-      await axios.put(`${backendUri}/menu-items/${this.itemToEdit.id}`, this.itemToEdit);
+      await axios.put(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/items/${this.itemToEdit.id}`, this.itemToEdit);
       this.editDialog = false;
       this.itemToEdit = {} as MenuItem;
       this.$emit("emitUpdateItems");
@@ -140,7 +140,7 @@ export default defineComponent({
     },
 
     async deleteItem() {
-      await axios.delete(`${backendUri}/menu-items/${this.itemToDelete.id}`);
+      await axios.delete(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/items/${this.itemToDelete.id}`);
       this.deleteDialog = false;
       this.itemToDelete = {} as MenuItem;
       this.$emit("emitUpdateItems");
