@@ -26,6 +26,7 @@
       </div>
       <template v-if="currentView === 0">
         <table-component class="my-3" :headers="tableHeaders" :items="salesReport" tableTitle="Ventas del dia" />
+        <table-component class="my-3" :headers="usherHeaders" :items="ushersReport" tableTitle="Servidores" />
       </template>
       <template v-else-if="currentView === 1">
         <menu-extras :extras="extras" @update-extras="emitUpdateExtras"/>
@@ -68,6 +69,10 @@ export default defineComponent({
       type: Array as () => SalesReportRow[],
       default: {} as SalesReportRow,
     },
+    ushersReport: {
+      type: Array as () => SalesReportRow[],
+      default: {} as SalesReportRow,
+    },
     extras: {
       type: Array as () => MenuExtra[],
       default: {} as MenuExtra,
@@ -96,6 +101,10 @@ export default defineComponent({
         { title: "Precio", key: "price" },
         { title: "Subtotal", key: "subtotal" },
         { title: "Vendidos", key: "sold", sortable: false },
+      ],
+      usherHeaders: [
+        { title: "Nombre", align: "start", key: "name" },
+        { title: "Entregados", key: "sold", sortable: false },
       ],
     };
   },

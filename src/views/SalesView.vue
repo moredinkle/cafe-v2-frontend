@@ -144,6 +144,9 @@ export default defineComponent({
     async saveOrder() {
       try {
         const type = this.orderType === "Venta" ? "VENTA" : "SERVIDOR";
+        if(type === "SERVIDOR") {
+          this.payedWith = this.orderTotal;
+        }
         const order: Order = {
           change: this.change,
           payedWith: this.payedWith,

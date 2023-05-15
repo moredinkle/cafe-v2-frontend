@@ -50,7 +50,7 @@
             <menu-edit :menu-items="menuItems" @emit-update-items="updateMenuItems" />
           </template>
           <template v-else>
-            <menu-report :sales-report="salesReport" :extras="extras" @emit-update-extras="getExtras"/>
+            <menu-report :sales-report="salesReport" :ushers-report="ushersReport" :extras="extras" @emit-update-extras="getExtras"/>
           </template>
         </div>
       </v-card>
@@ -89,6 +89,7 @@ export default defineComponent({
       extras: [] as MenuExtra[],
       menuItems: [] as MenuItem[],
       salesReport: [] as SalesReportRow[],
+      ushersReport: [] as SalesReportRow[],
       menuId: this.$route.params.id_menu as string,
     };
   },
@@ -115,6 +116,13 @@ export default defineComponent({
     async getSalesReport() {
       const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/sales`);
       this.salesReport = response.data.data.map((row: any) => {
+        return toReportRow(row);
+      });
+    },
+
+    async getUshersReport() {
+      const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/ushers`);
+      this.ushersReport = response.data.data.map((row: any) => {
         return toReportRow(row);
       });
     },
@@ -150,6 +158,7 @@ export default defineComponent({
     }
     this.selectMenu(this.menu);
     await this.getSalesReport();
+    await this.getUshersReport();
     await this.getExtras();
   },
 });

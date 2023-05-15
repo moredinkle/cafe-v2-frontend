@@ -3,7 +3,7 @@
     <template v-slot:prepend>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     </template>
-    <v-app-bar-title>Café v1</v-app-bar-title>
+    <v-app-bar-title>Café v2</v-app-bar-title>
     <template v-slot:append>
       <v-btn icon="mdi-account"></v-btn>
     </template>
