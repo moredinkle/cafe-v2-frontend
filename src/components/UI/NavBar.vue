@@ -56,8 +56,8 @@ export default defineComponent({
   methods: {
     logout(){
       localStorage.clear();
-      axios.defaults.headers.common['Authorization'] = null;
-      this.$router.push('/login');
+      axios.defaults.headers.common['authorization'] = null;
+      this.$router.push('/');
     }
   }
 });

@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center" align="center">
-    <v-col cols="12" sm="6" md="4">
+    <v-col cols="12" sm="6" lg="4">
       <v-card rounded class="px-12 py-8">
         <span class="text-h4 py-3">Cafe v2</span>
         <v-form @submit.prevent>
@@ -60,8 +60,8 @@ export default defineComponent({
   methods: {
     ...mapActions(useMenuDataStore,["getCurrentMenuData"]),
     async login() {
-      const response = await axios.post(`${backendUri}/auth/login`, {});
-      if (response.status === 201) {
+      const response = await axios.post(`${backendUri}/auth/login`, {username: this.username, password: this.password});
+      if (response.status === 200) {
         // const cookie = response.headers["set-cookie"];
         // if (cookie) {
         //   console.log(cookie);
@@ -69,9 +69,9 @@ export default defineComponent({
         const { id, token } = response.data.data;
         localStorage.setItem("auth-token", token);
         localStorage.setItem("user-id", id);
-        axios.defaults.headers.common['Authorization'] = token;
+        axios.defaults.headers.common['authorization'] = `Bearer ${token}`;
         await this.getCurrentMenuData();
-        this.$router.push('/sales');
+        this.$router.push('/ventas');
       } else {
         this.username = "";
         this.password = "";
