@@ -13,8 +13,6 @@
 import { defineComponent } from "vue";
 import ContentWrapper from "./components/UI/ContentWrapper.vue";
 import NavBar from "./components/UI/NavBar.vue";
-import { useMenuDataStore } from "./stores/menu-data-store";
-import { mapActions, mapStores } from "pinia";
 
 export default defineComponent({
   name: "App",
@@ -22,18 +20,9 @@ export default defineComponent({
     NavBar,
     ContentWrapper,
   },
-  computed: {
-    ...mapStores(useMenuDataStore),
-  },
   data() {
     return {};
   },
-  methods: {
-    ...mapActions(useMenuDataStore,["getCurrentMenuData", "updateActiveMenuItems"]),
-  },
-  async created(){
-    await this.getCurrentMenuData();
-  }
 });
 </script>
 

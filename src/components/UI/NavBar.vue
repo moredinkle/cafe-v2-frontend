@@ -1,11 +1,11 @@
 <template>
   <v-app-bar color="black">
     <template v-slot:prepend>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer" :disabled="route === '/'"></v-app-bar-nav-icon>
     </template>
     <v-app-bar-title>Café v2</v-app-bar-title>
     <template v-slot:append>
-      <v-btn icon="mdi-account"></v-btn>
+      <v-btn icon="mdi-account" @click="logout"></v-btn>
     </template>
   </v-app-bar>
 
@@ -26,6 +26,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import axios from 'axios';
 
 export default defineComponent({
   name: "NavBar",
@@ -47,5 +48,17 @@ export default defineComponent({
       ],
     };
   },
+  computed: {
+    route(){
+      return this.$route.path
+    }
+  },
+  methods: {
+    logout(){
+      localStorage.clear();
+      axios.defaults.headers.common['Authorization'] = null;
+      this.$router.push('/login');
+    }
+  }
 });
 </script>
