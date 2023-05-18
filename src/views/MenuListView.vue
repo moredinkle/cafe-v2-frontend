@@ -3,12 +3,12 @@
     <v-col cols="12" sm="6" class="flex-column">
       <span class="text-h5">Nuevo menú</span>
       <v-form class="mt-1">
-        <v-row>
+        <v-row align="baseline">
           <v-col cols="8">
             <v-text-field v-model="newMenuDate" label="Fecha" type="date" variant="outlined"></v-text-field>
           </v-col>
           <v-col cols="4">
-            <v-btn color="success" block @click="createMenu()">Crear</v-btn>
+            <v-btn color="success" block @click="createMenu()" append-icon="mdi-content-save-outline">Crear</v-btn>
           </v-col>
         </v-row>
       </v-form>
@@ -16,17 +16,40 @@
 
     <v-col cols="12" sm="6">
       <span class="text-h5 mb-1">Menú activo</span>
-        <v-card
-          :title="currentMenu.id ? currentMenuDate : 'Sin menú activo'"
-          :text="dayOfMenu"
-          @click="goToCurrentMenu()"
-          variant="outlined"
-          :disabled="currentMenu.id ? false : true"
-        ></v-card>
+      <v-card
+        :title="currentMenu.id ? currentMenuDate : 'Sin menú activo'"
+        :text="dayOfMenu"
+        @click="goToCurrentMenu()"
+        variant="outlined"
+        :disabled="currentMenu.id ? false : true"
+      ></v-card>
     </v-col>
   </v-row>
 
-  <span class="text-h5">Menús pasados</span>
+  <span class="text-h5">Buscar menús</span>
+  <v-row justify="start" align="baseline" class="py-4">
+    <v-col cols="6" sm="4" lg="2">
+      <v-text-field
+        v-model="filterStartDate"
+        hide-details="auto"
+        label="Fecha inicio"
+        type="date"
+        variant="outlined"
+      ></v-text-field>
+    </v-col>
+    <v-col cols="6" sm="4" lg="2">
+      <v-text-field
+        v-model="filterEndDate"
+        hide-details="auto"
+        label="Fecha fin"
+        type="date"
+        variant="outlined"
+      ></v-text-field>
+    </v-col>
+    <v-col cols="12" sm="4" lg="2">
+      <v-btn color="success" block @click="searchMenus()" append-icon="mdi-folder-search-outline">Buscar</v-btn>
+    </v-col>
+  </v-row>
   <v-row class="my-2">
     <v-col cols="12" sm="4" md="3" v-for="menu in pastMenus" :key="menu.id">
       <menu-card :menu="menu" />
@@ -51,11 +74,13 @@ export default defineComponent({
   },
   data() {
     return {
-      newMenuDate: new Date().toISOString().slice(0, 10),
+      newMenuDate: "",
+      filterStartDate: "",
+      filterEndDate: "",
       pastMenus: [] as Menu[],
       currentMenu: {} as Menu,
-      days: ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado'],
-      dayOfMenu: ''
+      days: ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"],
+      dayOfMenu: "",
     };
   },
   computed: {
@@ -72,26 +97,37 @@ export default defineComponent({
       this.$router.push(`/menus/${newId}`);
     },
 
-    async getMenus() {
-      const response = await axios.get(`${backendUri}/menus`);
-      const rawMenus = response.data.data;
-      rawMenus.map((menu: Menu) => {
-        if (menu.status === "ACTIVE") {
-          this.currentMenu = menu;
-          const date = new Date(this.currentMenu.date);
-          this.dayOfMenu = this.days[date.getDay()];
-        } else {
-          this.pastMenus.push(menu);
-        }
-      });
+    async searchMenus() {
+      const start = new Date(this.filterStartDate).toISOString().slice(0,10);
+      const end = new Date(this.filterEndDate).toISOString().slice(0,10);
+      const response = await axios.get(`${backendUri}/menus?start=${start}&end=${end}`);
+      console.log(response.data)
+      this.pastMenus = response.data.data;
     },
 
     goToCurrentMenu() {
       this.$router.push(`/menus/${this.currentMenu.id}`);
     },
+
+    setDates() {
+      let date = new Date();
+      this.filterEndDate = date.toISOString().slice(0, 10);
+      this.newMenuDate = date.toISOString().slice(0, 10);
+      date.setMonth(date.getMonth() - 1);
+      this.filterStartDate = date.toISOString().slice(0, 10);
+    },
+
+    setCurrentMenuData() {
+      if (this.menuDataStoreStore.currentMenu) {
+        this.currentMenu = this.menuDataStoreStore.currentMenu;
+        const date = new Date(this.currentMenu.date);
+        this.dayOfMenu = this.days[date.getDay()];
+      }
+    },
   },
-  async created() {
-    await this.getMenus();
+  created() {
+    this.setDates();
+    this.setCurrentMenuData();
   },
 });
 </script>

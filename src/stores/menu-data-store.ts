@@ -27,10 +27,12 @@ export const useMenuDataStore = defineStore({
     async getCurrentMenuData() {
       try {
         const response = await axios.get(`${backendUri}/menus/?field=status&value=ACTIVE`);
-        this.currentMenu = response.data.data[0];
-        this.updateActiveMenuItems();
+        if(response.data.data.length > 0) {
+          this.currentMenu = response.data.data[0];
+          this.updateActiveMenuItems();
+        }
       } catch (error) {
-        alert("No active menu");
+        alert('Error inesperado');
       }
     },
     selectMenu(menu: Menu){
