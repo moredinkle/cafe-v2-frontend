@@ -69,7 +69,7 @@ export default defineComponent({
       return this.menuDataStoreStore.currentMenu;
     },
     menuItems(): MenuItem[] {
-      return this.menuDataStoreStore.currentMenuItems;
+      return this.menuDataStoreStore.currentMenuData.items;
     },
     change(): number {
       return this.payedWith - this.orderTotal;
@@ -104,7 +104,7 @@ export default defineComponent({
     };
   },
   methods: {
-    ...mapActions(useMenuDataStore, ["updateActiveMenuItems"]),
+    ...mapActions(useMenuDataStore, ["updateActiveMenuItems", "setNewSalesFlag"]),
     deleteFromOrder(item: any) {
       const deleteIndex = this.orderItems.findIndex((it) => it.id === item.id);
       this.orderItems.splice(deleteIndex, 1);
@@ -172,12 +172,14 @@ export default defineComponent({
           this.orderTotal = 0;
           this.displaySnackbar("success", "Guardado con exito");
           await this.updateActiveMenuItems();
+          if(!this.menuDataStoreStore.newSalesFlag){
+            this.setNewSalesFlag(true);
+          }
         }
       } catch (error) {
         alert("Error al guardar");
       }
     },
   },
-  created() {},
 });
 </script>

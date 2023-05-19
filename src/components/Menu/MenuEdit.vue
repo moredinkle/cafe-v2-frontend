@@ -92,8 +92,8 @@ export default defineComponent({
       ],
       itemNameRules: [
         (value: string) => {
-          if (value?.length > 3) return true;
-          return "First name must be at least 3 characters.";
+          if (value?.length > 0) return true;
+          return "Campo obligatorio";
         },
       ],
       stockRules: [

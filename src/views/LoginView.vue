@@ -2,7 +2,10 @@
   <v-row justify="center" align="center">
     <v-col cols="12" sm="6" lg="4">
       <v-card rounded class="px-12 py-8">
-        <span class="text-h4 py-3">Cafe v2</span>
+        <div class="d-flex flex-column justify-center align-center">
+          <v-icon icon="mdi-coffee" size="x-large"></v-icon>
+          <span class="text-h5 font-weight-black">Cafe v2</span>
+        </div>
         <v-form @submit.prevent>
           <v-text-field
             class="py-3"
@@ -58,7 +61,7 @@ export default defineComponent({
     };
   },
   methods: {
-    ...mapActions(useMenuDataStore,["getCurrentMenuData"]),
+    ...mapActions(useMenuDataStore,["getCurrentMenu"]),
     async login() {
       const response = await axios.post(`${backendUri}/auth/login`, {username: this.username, password: this.password});
       if (response.status === 200) {
@@ -70,7 +73,7 @@ export default defineComponent({
         localStorage.setItem("auth-token", token);
         localStorage.setItem("user-id", id);
         axios.defaults.headers.common['authorization'] = `Bearer ${token}`;
-        await this.getCurrentMenuData();
+        await this.getCurrentMenu();
         this.$router.push('/ventas');
       } else {
         this.username = "";

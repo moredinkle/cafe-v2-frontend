@@ -32,7 +32,7 @@
         <menu-extras :extras="extras" @update-extras="emitUpdateExtras"/>
       </template>
       <template v-else-if="currentView === 2">
-        <manual-save :report="salesReport" />
+        <manual-save :report="salesReport" @update-menu-items="emitUpdateExtras"/>
       </template>
 
   <popup-dialog
@@ -57,7 +57,7 @@ import { mapStores } from "pinia";
 
 export default defineComponent({
   name: "MenuReport",
-  emits: ["markAsCompleted", "emitUpdateExtras"],
+  emits: ["emitUpdateExtras", "emitUpdateItems"],
   components: {
     TableComponent,
     PopupDialog,
@@ -111,9 +111,10 @@ export default defineComponent({
   methods: {
     emitUpdateExtras(){
       this.$emit("emitUpdateExtras");
+    },
+    emitUpdateItems(){
+      this.$emit("emitUpdateItems");
     }
   },
-  //TODO
-  //servidores --> todo lo que tenga que ver con servidores (ventas y reporte)
 });
 </script>

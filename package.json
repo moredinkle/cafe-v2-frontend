@@ -13,11 +13,12 @@
   },
   "dependencies": {
     "@mdi/font": "5.9.55",
+    "@types/pdfmake": "^0.2.2",
     "axios": "^1.3.4",
+    "pdfmake": "^0.2.7",
     "pinia": "^2.0.33",
     "roboto-fontface": "*",
     "vue": "^3.2.47",
-    "vue-cookies": "^1.8.3",
     "vue-router": "^4.1.6",
     "vuetify": "^3.0.0-beta.0",
     "webfontloader": "^1.0.0"

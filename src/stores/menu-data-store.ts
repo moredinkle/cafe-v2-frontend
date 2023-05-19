@@ -1,48 +1,110 @@
-import type { MenuItem, Menu } from '@/utils/types';
-import { defineStore } from 'pinia';
-import axios from 'axios';
+import { type MenuItem, type Menu, type MenuExtra, type SalesReportRow, toReportRow, toExtra } from "@/utils/types";
+import { defineStore } from "pinia";
+import axios from "axios";
 
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export const useMenuDataStore = defineStore({
-  id: 'menuDataStore',
+  id: "menuDataStore",
   state: () => ({
     currentMenu: {} as Menu,
-    currentMenuItems: [] as MenuItem[],
-    selectedMenu: {} as Menu
+    currentMenuData: {
+      items: [] as MenuItem[],
+      extras: [] as MenuExtra[],
+      sales: [] as SalesReportRow[],
+      ushers: [] as SalesReportRow[],
+    },
+    newSalesFlag: false,
+    selectedMenu: {} as Menu,
   }),
   getters: {
     stockFilteredItems(state) {
-      return state.currentMenuItems.filter(item => item.stock > 0);
+      return state.currentMenuData.items.filter((item) => item.stock > 0);
     },
   },
   actions: {
+    async getCurrentMenu() {
+      try {
+        const response = await axios.get(`${backendUri}/menus/?field=status&value=ACTIVE`);
+        if (response.data.data.length > 0) {
+          this.currentMenu = response.data.data[0];
+          await this.getMenuData();
+        }
+      } catch (error) {
+        alert("Error inesperado");
+      }
+    },
+
+    async getMenuData() {
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/complete`);
+      const { items, extras, sales, ushers } = response.data.menuData;
+      this.currentMenuData.items = items.map((item: any) => {
+        item.price = parseFloat(item.price as unknown as string);
+        return item;
+      });
+      this.currentMenuData.extras = extras.map((row: any) => {
+        return toExtra(row);
+      });
+      this.currentMenuData.sales = sales.map((row: any) => {
+        return toReportRow(row);
+      });
+      this.currentMenuData.ushers = ushers.map((row: any) => {
+        return toReportRow(row);
+      });
+    },
+
     async updateActiveMenuItems() {
       const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/items`);
-      this.currentMenuItems = response.data.data;
-      this.currentMenuItems.forEach(item => {
+      this.currentMenuData.items = response.data.data;
+      this.currentMenuData.items.forEach((item) => {
         item.price = parseFloat(item.price as unknown as string);
       });
     },
-    async getCurrentMenuData() {
-      try {
-        const response = await axios.get(`${backendUri}/menus/?field=status&value=ACTIVE`);
-        if(response.data.data.length > 0) {
-          this.currentMenu = response.data.data[0];
-          this.updateActiveMenuItems();
-        }
-      } catch (error) {
-        alert('Error inesperado');
-      }
+
+    async updateSalesReport() {
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/sales`);
+      this.currentMenuData.sales = response.data.data.map((row: any) => {
+        return toReportRow(row);
+      });
     },
-    selectMenu(menu: Menu){
+
+    async updateUshersReport() {
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/ushers`);
+      this.currentMenuData.ushers = response.data.data.map((row: any) => {
+        return toReportRow(row);
+      });
+    },
+
+    async updateExtras() {
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/extras`);
+      this.currentMenuData.extras = response.data.data.map((row: any) => {
+        return toExtra(row);
+      });
+    },
+    
+    async updateSalesData(){
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/report`);
+      const { sales, ushers } = response.data.data;
+      this.currentMenuData.sales = sales.map((row: any) => {
+        return toReportRow(row);
+      });
+      this.currentMenuData.ushers = ushers.map((row: any) => {
+        return toReportRow(row);
+      });
+      this.setNewSalesFlag(false);
+    },
+
+    selectMenu(menu: Menu) {
       this.selectedMenu = menu;
     },
-    setCurrentMenu(menu: Menu){
-      this.currentMenu = menu;
+    setCurrentMenu(menu: Menu) {
+      this.currentMenu = menu;//TODO revisar full report
     },
-    setCurrentMenuItems(items: MenuItem[]){
-      this.currentMenuItems = items;
-    }
-  }
-})
+    setCurrentMenuItems(items: MenuItem[]) {
+      this.currentMenuData.items = items;
+    },
+    setNewSalesFlag(newValue: boolean) {
+      this.newSalesFlag = newValue;
+    },
+  },
+});

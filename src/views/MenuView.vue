@@ -32,25 +32,23 @@
               <span class="text-subtitle-2">{{ menuDataStoreStore.selectedMenu.status }}</span>
             </div>
             <template v-if="menuDataStoreStore.selectedMenu.status === 'INACTIVE'">
-            <v-btn
-              color="green-darken-2"
-              @click="updateMenuStatus('ACTIVE')"
-              >Marcar como activo</v-btn
-            >
+              <v-btn color="green-darken-2" @click="updateMenuStatus('ACTIVE')">Marcar como activo</v-btn>
             </template>
             <template v-else-if="menuDataStoreStore.selectedMenu.status === 'ACTIVE'">
-            <v-btn
-              color="red-darken-2"
-              @click="updateMenuStatus('FINISHED')"
-              >Marcar como terminado</v-btn
-            >
+              <v-btn color="red-darken-2" @click="updateMenuStatus('FINISHED')">Marcar como terminado</v-btn>
             </template>
           </div>
           <template v-if="selectedTab === 0">
             <menu-edit :menu-items="menuItems" @emit-update-items="updateMenuItems" />
           </template>
           <template v-else>
-            <menu-report :sales-report="salesReport" :ushers-report="ushersReport" :extras="extras" @emit-update-extras="getExtras"/>
+            <menu-report
+              :sales-report="salesReport"
+              :ushers-report="ushersReport"
+              :extras="extras"
+              @emit-update-extras="getExtras"
+              @emit-update-items="updateMenuItems"
+            />
           </template>
         </div>
       </v-card>
@@ -62,7 +60,7 @@
 import { defineComponent } from "vue";
 import MenuEdit from "@/components/Menu/MenuEdit.vue";
 import MenuReport from "@/components/Menu/MenuReport.vue";
-import { toExtra, toReportRow, type MenuExtra, type Menu, type MenuItem, type SalesReportRow } from "@/utils/types";
+import { toExtra, type MenuExtra, type Menu, type MenuItem, type SalesReportRow } from "@/utils/types";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
@@ -106,43 +104,49 @@ export default defineComponent({
     },
   },
   methods: {
-    ...mapActions(useMenuDataStore, ["getCurrentMenuData", "updateActiveMenuItems", "selectMenu", "setCurrentMenu"]),
+    ...mapActions(useMenuDataStore, [
+      "getMenuData",
+      "updateExtras",
+      "updateActiveMenuItems",
+      "updateSalesData",
+      "selectMenu",
+      "setCurrentMenu",
+    ]),
     async getMenuData() {
       const response = await axios.get(`${backendUri}/menus/${this.menuId}/complete`);
-      this.menu = response.data.data.menu;
-      this.menuItems = response.data.data.items;
+      this.menu = response.data.menuData.menu;
+      this.menuItems = response.data.menuData.items;
+      this.extras = response.data.menuData.extras;
+      this.salesReport = response.data.menuData.sales;
+      this.ushersReport = response.data.menuData.ushers;
     },
 
-    async getSalesReport() {
-      const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/sales`);
-      this.salesReport = response.data.data.map((row: any) => {
-        return toReportRow(row);
-      });
-    },
-
-    async getUshersReport() {
-      const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/ushers`);
-      this.ushersReport = response.data.data.map((row: any) => {
-        return toReportRow(row);
-      });
-    },
-    
-    async getExtras(){
-      const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`);
-      this.extras = response.data.data.map((item: any) => {
-        const it = toExtra(item);
-        return it;
-      });
-    },
+    async getExtras() {
+      if (this.menuDataStoreStore.currentMenu.id === this.menuId) {
+        await this.updateExtras();
+        this.extras = [...this.menuDataStoreStore.currentMenuData.extras];
+      } else {
+        const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`);
+        this.extras = response.data.data.map((item: any) => {
+          const it = toExtra(item);
+          return it;
+        });
+      }
+    }, //TODO ir probando si sigue funcionando
 
     async updateMenuItems() {
-      const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/items`);
-      this.menuItems = response.data.data;
+      if (this.menuDataStoreStore.currentMenu.id === this.menuId) {
+        await this.updateActiveMenuItems();
+        this.menuItems = [...this.menuDataStoreStore.currentMenuData.items];
+      } else {
+        const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/items`);
+        this.menuItems = response.data.data; //?
+      }
     },
 
     async updateMenuStatus(newStatus: "INACTIVE" | "ACTIVE" | "FINISHED") {
-      const response = await axios.put(`${backendUri}/menus/${this.selectedMenu.id}`, {status: newStatus});
-      if(newStatus === "ACTIVE" && this.menuDataStoreStore.currentMenu.id === this.menuId) {
+      const response = await axios.put(`${backendUri}/menus/${this.selectedMenu.id}`, { status: newStatus });
+      if (newStatus === "ACTIVE" && this.menuDataStoreStore.currentMenu.id === this.menuId) {
         this.setCurrentMenu(response.data.updatedMenu as Menu);
         this.setCurrentMenuItems(this.menuItems);
       }
@@ -151,15 +155,18 @@ export default defineComponent({
 
   async created() {
     if (this.menuId === this.menuDataStoreStore.currentMenu.id) {
+      if (this.menuDataStoreStore.newSalesFlag) {
+        await this.updateSalesData();
+      }
       this.menu = { ...this.menuDataStoreStore.currentMenu };
-      this.menuItems = [...this.menuDataStoreStore.currentMenuItems];
+      this.menuItems = [...this.menuDataStoreStore.currentMenuData.items];
+      this.extras = [...this.menuDataStoreStore.currentMenuData.extras];
+      this.salesReport = [...this.menuDataStoreStore.currentMenuData.sales];
+      this.ushersReport = [...this.menuDataStoreStore.currentMenuData.ushers];
     } else {
       await this.getMenuData();
     }
     this.selectMenu(this.menu);
-    await this.getSalesReport();
-    await this.getUshersReport();
-    await this.getExtras();
   },
 });
 </script>

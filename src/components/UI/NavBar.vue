@@ -5,7 +5,7 @@
     </template>
     <v-app-bar-title>Café v2</v-app-bar-title>
     <template v-slot:append>
-      <v-btn icon="mdi-account" @click="logout"></v-btn>
+      <v-btn icon="mdi-logout" @click="logout"></v-btn>
     </template>
   </v-app-bar>
 

@@ -63,6 +63,7 @@ const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
   name: "ManualSave",
+  emits: ["updateMenuItems"],
   components: {
     TableComponent,
   },
@@ -147,6 +148,7 @@ export default defineComponent({
           }
           this.displaySnackbar("info", "Cambios guardados");
           this.manualSaves = [];
+          this.$emit("updateMenuItems");
         }
       } catch (error) {
         alert("Error al guardar");
