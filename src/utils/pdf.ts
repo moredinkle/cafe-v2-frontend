@@ -4,7 +4,7 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
 (pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
 
 
-export function verpdf(sales: SalesReportRow[], ushers: SalesReportRow[], extras: MenuExtra[], menuDate: string, totalSales: number, totalExtras: number) {
+export function exportPdf(sales: SalesReportRow[], ushers: SalesReportRow[], extras: MenuExtra[], menuDate: string, totalSales: number, totalExtras: number) {
     const salesData: any = [
       [
         { text: "Nombre", bold: true, fillColor: '#e0ebeb' },
@@ -14,7 +14,8 @@ export function verpdf(sales: SalesReportRow[], ushers: SalesReportRow[], extras
       ],
     ];
     sales.map((item) => {
-        salesData.push({...item});
+        const it = [item.name, item.price, item.sold, item.subtotal];
+        salesData.push(it);
     });
     const extrasData: any = [
       [
@@ -25,7 +26,7 @@ export function verpdf(sales: SalesReportRow[], ushers: SalesReportRow[], extras
     ];
     extras.map((item) => {
       const it = [item.description, item.amount, item.type];
-      extrasData.push({...it});
+      extrasData.push(it);
     });
     const ushersData: any = [
       [
@@ -35,7 +36,7 @@ export function verpdf(sales: SalesReportRow[], ushers: SalesReportRow[], extras
     ];
     ushers.map((item) => {
       const it = [item.name, item.sold];
-      ushersData.push({...it});
+      ushersData.push(it);
     });
 
     const docDefinition = {

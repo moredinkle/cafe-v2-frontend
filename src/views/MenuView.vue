@@ -27,16 +27,19 @@
       <v-card rounded>
         <div class="px-3">
           <div class="d-flex flex-wrap justify-space-between align-center mt-2">
-            <div class="d-flex flex-column justify-end">
+            <div class="d-flex flex-column justify-end align-start">
               <h2>{{ formattedDate }}</h2>
               <span class="text-subtitle-2">{{ menuDataStoreStore.selectedMenu.status }}</span>
             </div>
-            <template v-if="menuDataStoreStore.selectedMenu.status === 'INACTIVE'">
-              <v-btn color="green-darken-2" @click="updateMenuStatus('ACTIVE')">Marcar como activo</v-btn>
-            </template>
-            <template v-else-if="menuDataStoreStore.selectedMenu.status === 'ACTIVE'">
-              <v-btn color="red-darken-2" @click="updateMenuStatus('FINISHED')">Marcar como terminado</v-btn>
-            </template>
+            <div class="d-flex flex-column justify-start">
+              <template v-if="menuDataStoreStore.selectedMenu.status === 'INACTIVE'">
+                <v-btn color="green-darken-2" @click="updateMenuStatus('ACTIVE')">Marcar como activo</v-btn>
+              </template>
+              <template v-else-if="menuDataStoreStore.selectedMenu.status === 'ACTIVE'">
+                <v-btn color="red-darken-2" @click="updateMenuStatus('FINISHED')">Marcar como terminado</v-btn>
+              </template>
+              <v-btn class="my-1" color="black" append-icon="mdi-file-pdf-box" @click="toPdf">Pdf</v-btn>
+            </div>
           </div>
           <template v-if="selectedTab === 0">
             <menu-edit :menu-items="menuItems" @emit-update-items="updateMenuItems" />
@@ -66,6 +69,7 @@ import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
 import axios from "axios";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
+import { exportPdf } from "../utils/pdf";
 
 export default defineComponent({
   name: "MenuView",
@@ -132,7 +136,7 @@ export default defineComponent({
           return it;
         });
       }
-    }, //TODO ir probando si sigue funcionando
+    },
 
     async updateMenuItems() {
       if (this.menuDataStoreStore.currentMenu.id === this.menuId) {
@@ -150,6 +154,16 @@ export default defineComponent({
         this.setCurrentMenu(response.data.updatedMenu as Menu);
         this.setCurrentMenuItems(this.menuItems);
       }
+    },
+
+    toPdf() {
+      const totalSales = this.salesReport.reduce((acc, obj) => {
+        return acc + obj.subtotal;
+      }, 0);
+      const totalExtras = this.extras.reduce((total, extra) => {
+        return extra.type === "INGRESO" ? total + extra.amount : total - extra.amount;
+      }, 0);
+      exportPdf(this.salesReport, this.ushersReport, this.extras, this.formattedDate, totalSales, totalExtras);
     },
   },
 
