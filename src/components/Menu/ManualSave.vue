@@ -115,7 +115,6 @@ export default defineComponent({
       manual.sold = this.manualSaveSold;
       manual.subtotal = manual.price * this.manualSaveSold;
       this.manualSaves.push({ ...manual });
-      this.selectedItem = {} as SalesReportRow;
       this.manualSaveSold = 0;
     },
 
@@ -148,6 +147,7 @@ export default defineComponent({
           }
           this.displaySnackbar("info", "Cambios guardados");
           this.manualSaves = [];
+          this.selectedItem = {} as SalesReportRow;
           this.$emit("updateMenuItems");
         }
       } catch (error) {

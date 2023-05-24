@@ -42,7 +42,7 @@
             </div>
           </div>
           <template v-if="selectedTab === 0">
-            <menu-edit :menu-items="menuItems" @emit-update-items="updateMenuItems" />
+            <menu-edit :menu-items="menuItems" @emit-update-items="updateManualSave" />
           </template>
           <template v-else>
             <menu-report
@@ -50,7 +50,7 @@
               :ushers-report="ushersReport"
               :extras="extras"
               @emit-update-extras="getExtras"
-              @emit-update-items="updateMenuItems"
+              @emit-update-items="updateManualSave"
             />
           </template>
         </div>
@@ -63,13 +63,14 @@
 import { defineComponent } from "vue";
 import MenuEdit from "@/components/Menu/MenuEdit.vue";
 import MenuReport from "@/components/Menu/MenuReport.vue";
-import { toExtra, type MenuExtra, type Menu, type MenuItem, type SalesReportRow } from "@/utils/types";
+import { toExtra, type MenuExtra, type Menu, type MenuItem, type SalesReportRow, toReportRow } from "@/utils/types";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
 import axios from "axios";
 const backendUri = import.meta.env.VITE_BACKEND_URI;
 import { exportPdf } from "../utils/pdf";
+import { toMenuItem } from "../utils/types";
 
 export default defineComponent({
   name: "MenuView",
@@ -113,6 +114,7 @@ export default defineComponent({
       "updateExtras",
       "updateActiveMenuItems",
       "updateSalesData",
+      "updateManualClose",
       "selectMenu",
       "setCurrentMenu",
     ]),
@@ -134,6 +136,23 @@ export default defineComponent({
         this.extras = response.data.data.map((item: any) => {
           const it = toExtra(item);
           return it;
+        });
+      }
+    },
+
+    async updateManualSave() {
+      if (this.menuDataStoreStore.currentMenu.id === this.menuId) {
+        await this.updateManualClose();
+        this.menuItems = [...this.menuDataStoreStore.currentMenuData.items];
+        this.salesReport = [...this.menuDataStoreStore.currentMenuData.sales];
+      } else {
+        const response = await axios.get(`${backendUri}/menus/${this.selectedMenu.id}/report`);
+        const { items, sales } = response.data.data;
+        this.menuItems = items.map((row: any) => {
+          return toMenuItem(row);
+        });
+        this.salesReport = sales.map((row: any) => {
+          return toReportRow(row);
         });
       }
     },

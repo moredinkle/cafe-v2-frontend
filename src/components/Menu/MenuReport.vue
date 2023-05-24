@@ -32,7 +32,7 @@
         <menu-extras :extras="extras" @update-extras="emitUpdateExtras"/>
       </template>
       <template v-else-if="currentView === 2">
-        <manual-save :report="salesReport" @update-menu-items="emitUpdateExtras"/>
+        <manual-save :report="salesReport" @update-menu-items="emitUpdateItems"/>
       </template>
 
   <popup-dialog

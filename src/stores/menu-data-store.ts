@@ -94,6 +94,21 @@ export const useMenuDataStore = defineStore({
       this.setNewSalesFlag(false);
     },
 
+    async updateManualClose(){
+      const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/report`);
+      const { items, sales, ushers } = response.data.data;
+      this.currentMenuData.items = items.map((row: any) => {
+        row.price = parseFloat(row.price as unknown as string);
+        return row;
+      });
+      this.currentMenuData.sales = sales.map((row: any) => {
+        return toReportRow(row);
+      });
+      this.currentMenuData.ushers = ushers.map((row: any) => {
+        return toReportRow(row);
+      });
+    },
+
     selectMenu(menu: Menu) {
       this.selectedMenu = menu;
     },

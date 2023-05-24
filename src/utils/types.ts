@@ -68,3 +68,8 @@ export function toReportRow(item: any){
   } as SalesReportRow;
 }
 
+
+export function toMenuItem(item: any){
+  item.price = parseFloat(item.price as unknown as string);
+  return item as MenuItem;
+}
