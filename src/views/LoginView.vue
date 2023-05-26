@@ -65,20 +65,15 @@ export default defineComponent({
     async login() {
       const response = await axios.post(`${backendUri}/auth/login`, {username: this.username, password: this.password});
       if (response.status === 200) {
-        // const cookie = response.headers["set-cookie"];
-        // if (cookie) {
-        //   console.log(cookie);
-        // }
-        const { id, token } = response.data.data;
+        const { token } = response.data.data;
         localStorage.setItem("auth-token", token);
-        localStorage.setItem("user-id", id);
         axios.defaults.headers.common['authorization'] = `Bearer ${token}`;
         await this.getCurrentMenu();
         this.$router.push('/ventas');
       } else {
         this.username = "";
         this.password = "";
-        alert("Credenciales incorrectos.");
+        alert("Credenciales incorrectos");
       }
     },
   },

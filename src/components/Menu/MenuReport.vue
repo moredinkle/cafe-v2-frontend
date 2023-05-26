@@ -1,5 +1,7 @@
 <template>
-      <span class="text-h6 text-indigo-darken-4">Total recaudado: {{ totalSales }} Bs</span>
+      <span class="text-h6 text-indigo-darken-4">Ventas: {{ totalSales }} Bs</span> <br>
+      <span class="text-h6 text-orange-darken-4">Extras: {{ totalExtras }} Bs</span> <br>
+      <span class="text-h6 text-green-darken-4">Total recaudado: {{totalSales + totalExtras }} Bs</span>
       <div class="d-flex align-center mt-2">
         <v-btn
           class="mr-2"
@@ -32,7 +34,7 @@
         <menu-extras :extras="extras" @update-extras="emitUpdateExtras"/>
       </template>
       <template v-else-if="currentView === 2">
-        <manual-save :report="salesReport" @update-menu-items="emitUpdateItems"/>
+        <manual-save :report="itemsForManualSave"  @update-menu-items="emitUpdateItems"/>
       </template>
 
   <popup-dialog
@@ -77,6 +79,12 @@ export default defineComponent({
       type: Array as () => MenuExtra[],
       default: {} as MenuExtra,
     },
+    itemsForManualSave: {
+      type: Array as () => SalesReportRow[],
+      default: () => {
+        return [];
+      },
+    }
   },
   computed: {
     ...mapStores(useMenuDataStore),
@@ -88,6 +96,11 @@ export default defineComponent({
         return acc + obj.subtotal;
       }, 0);
     },
+    totalExtras(): number {
+      return this.extras.reduce((total, extra) => {
+        return extra.type === "INGRESO" ? total + extra.amount : total - extra.amount;
+      }, 0);
+    }
   },
   data() {
     return {

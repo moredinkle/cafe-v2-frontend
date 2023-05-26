@@ -13,6 +13,9 @@
 import { defineComponent } from "vue";
 import ContentWrapper from "./components/UI/ContentWrapper.vue";
 import NavBar from "./components/UI/NavBar.vue";
+import axios from "axios";
+import { mapActions } from "pinia";
+import { useMenuDataStore } from "./stores/menu-data-store";
 
 export default defineComponent({
   name: "App",
@@ -20,8 +23,18 @@ export default defineComponent({
     NavBar,
     ContentWrapper,
   },
-  data() {
-    return {};
+  methods: {
+    ...mapActions(useMenuDataStore, ["getCurrentMenu"]),
+  },
+  beforeUnmount () {
+    localStorage.removeItem('auth-token');
+  },
+  async mounted() {
+    const token = localStorage.getItem("auth-token");
+    if (token) {
+      axios.defaults.headers.common["authorization"] = `Bearer ${token}`;
+      await this.getCurrentMenu();
+    }
   },
 });
 </script>

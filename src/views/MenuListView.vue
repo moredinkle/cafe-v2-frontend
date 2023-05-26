@@ -92,16 +92,21 @@ export default defineComponent({
   },
   methods: {
     async createMenu() {
-      const response = await axios.post(`${backendUri}/menus`, { date: this.newMenuDate, status: "INACTIVE" });
+      const date = new Date(this.newMenuDate);
+      const hoursToAdd = 8;
+      date.setHours(date.getHours() + hoursToAdd);
+      const response = await axios.post(`${backendUri}/menus`, { date: date.toISOString(), status: "INACTIVE" });
       const newId = response.data.newMenuId;
       this.$router.push(`/menus/${newId}`);
     },
 
     async searchMenus() {
-      const start = new Date(this.filterStartDate).toISOString().slice(0,10);
-      const end = new Date(this.filterEndDate).toISOString().slice(0,10);
-      const response = await axios.get(`${backendUri}/menus?start=${start}&end=${end}`);
-      console.log(response.data)
+      const hoursToAdd = 8;
+      const start = new Date(this.filterStartDate);
+      const end = new Date(this.filterEndDate);
+      start.setHours(start.getHours() + hoursToAdd);
+      end.setHours(end.getHours() + hoursToAdd);
+      const response = await axios.get(`${backendUri}/menus?start=${start.toISOString()}&end=${end.toISOString()}`);
       this.pastMenus = response.data.data;
     },
 

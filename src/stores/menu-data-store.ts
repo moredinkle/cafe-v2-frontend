@@ -1,4 +1,4 @@
-import { type MenuItem, type Menu, type MenuExtra, type SalesReportRow, toReportRow, toExtra } from "@/utils/types";
+import { type MenuItem, type Menu, type MenuExtra, type SalesReportRow, toReportRow, toExtra, toMenuItem } from "@/utils/types";
 import { defineStore } from "pinia";
 import axios from "axios";
 
@@ -39,8 +39,7 @@ export const useMenuDataStore = defineStore({
       const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/complete`);
       const { items, extras, sales, ushers } = response.data.menuData;
       this.currentMenuData.items = items.map((item: any) => {
-        item.price = parseFloat(item.price as unknown as string);
-        return item;
+        return toMenuItem(item);
       });
       this.currentMenuData.extras = extras.map((row: any) => {
         return toExtra(row);
@@ -98,8 +97,7 @@ export const useMenuDataStore = defineStore({
       const response = await axios.get(`${backendUri}/menus/${this.currentMenu.id}/report`);
       const { items, sales, ushers } = response.data.data;
       this.currentMenuData.items = items.map((row: any) => {
-        row.price = parseFloat(row.price as unknown as string);
-        return row;
+        return toMenuItem(row);
       });
       this.currentMenuData.sales = sales.map((row: any) => {
         return toReportRow(row);
@@ -113,10 +111,16 @@ export const useMenuDataStore = defineStore({
       this.selectedMenu = menu;
     },
     setCurrentMenu(menu: Menu) {
-      this.currentMenu = menu;//TODO revisar full report
+      this.currentMenu = menu;
     },
     setCurrentMenuItems(items: MenuItem[]) {
       this.currentMenuData.items = items;
+    },
+    setCurrentMenuData(items: MenuItem[], extras: MenuExtra[], sales: SalesReportRow[], ushers: SalesReportRow[]) {
+      this.currentMenuData.items = items;
+      this.currentMenuData.extras = extras;
+      this.currentMenuData.sales = sales;
+      this.currentMenuData.ushers = ushers;
     },
     setNewSalesFlag(newValue: boolean) {
       this.newSalesFlag = newValue;

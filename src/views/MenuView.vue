@@ -29,13 +29,13 @@
           <div class="d-flex flex-wrap justify-space-between align-center mt-2">
             <div class="d-flex flex-column justify-end align-start">
               <h2>{{ formattedDate }}</h2>
-              <span class="text-subtitle-2">{{ menuDataStoreStore.selectedMenu.status }}</span>
+              <span class="text-subtitle-2">{{ selectedMenu.status }}</span>
             </div>
             <div class="d-flex flex-column justify-start">
-              <template v-if="menuDataStoreStore.selectedMenu.status === 'INACTIVE'">
+              <template v-if="selectedMenu.status === 'INACTIVE'">
                 <v-btn color="green-darken-2" @click="updateMenuStatus('ACTIVE')">Marcar como activo</v-btn>
               </template>
-              <template v-else-if="menuDataStoreStore.selectedMenu.status === 'ACTIVE'">
+              <template v-else-if="selectedMenu.status === 'ACTIVE'">
                 <v-btn color="red-darken-2" @click="updateMenuStatus('FINISHED')">Marcar como terminado</v-btn>
               </template>
               <v-btn class="my-1" color="black" append-icon="mdi-file-pdf-box" @click="toPdf">Pdf</v-btn>
@@ -48,6 +48,7 @@
             <menu-report
               :sales-report="salesReport"
               :ushers-report="ushersReport"
+              :items-for-manual-save="itemsForManualSave"
               :extras="extras"
               @emit-update-extras="getExtras"
               @emit-update-items="updateManualSave"
@@ -63,14 +64,13 @@
 import { defineComponent } from "vue";
 import MenuEdit from "@/components/Menu/MenuEdit.vue";
 import MenuReport from "@/components/Menu/MenuReport.vue";
-import { toExtra, type MenuExtra, type Menu, type MenuItem, type SalesReportRow, toReportRow } from "@/utils/types";
+import { toExtra, type MenuExtra, type Menu, type MenuItem, type SalesReportRow, toReportRow, toMenuItem } from "@/utils/types";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
 import axios from "axios";
-const backendUri = import.meta.env.VITE_BACKEND_URI;
 import { exportPdf } from "../utils/pdf";
-import { toMenuItem } from "../utils/types";
+const backendUri = import.meta.env.VITE_BACKEND_URI;
 
 export default defineComponent({
   name: "MenuView",
@@ -95,7 +95,7 @@ export default defineComponent({
       ushersReport: [] as SalesReportRow[],
       menuId: this.$route.params.id_menu as string,
     };
-  },
+  }, //TODO añadir un items for manual save o algo asi
   computed: {
     ...mapStores(useMenuDataStore),
     selectedMenu(): Menu {
@@ -107,6 +107,24 @@ export default defineComponent({
       const formattedDate = date.toLocaleDateString(undefined, options);
       return formattedDate.charAt(0).toLocaleUpperCase() + formattedDate.slice(1);
     },
+    itemsForManualSave(): SalesReportRow[] {
+      const items = [] as SalesReportRow[];
+      this.menuItems.forEach((item) => {
+        let it = this.salesReport.find((it) => it.id === item.id);
+        if (!it) {
+          it = {
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            stock: item.stock,
+            sold: 0,
+            subtotal: 0,
+          } as SalesReportRow;
+        }
+        items.push(it);
+      });
+      return items;
+    },
   },
   methods: {
     ...mapActions(useMenuDataStore, [
@@ -117,14 +135,24 @@ export default defineComponent({
       "updateManualClose",
       "selectMenu",
       "setCurrentMenu",
+      "setCurrentMenuData",
     ]),
     async getMenuData() {
       const response = await axios.get(`${backendUri}/menus/${this.menuId}/complete`);
+      const {items, extras, sales, ushers} = response.data.menuData;
       this.menu = response.data.menuData.menu;
-      this.menuItems = response.data.menuData.items;
-      this.extras = response.data.menuData.extras;
-      this.salesReport = response.data.menuData.sales;
-      this.ushersReport = response.data.menuData.ushers;
+      this.menuItems = items.map((item: any) => {
+        return toMenuItem(item);
+      });
+      this.extras = extras.map((row: any) => {
+        return toExtra(row);
+      });
+      this.salesReport = sales.map((row: any) => {
+        return toReportRow(row);
+      });
+      this.ushersReport = ushers.map((row: any) => {
+        return toReportRow(row);
+      });
     },
 
     async getExtras() {
@@ -134,8 +162,7 @@ export default defineComponent({
       } else {
         const response = await axios.get(`${backendUri}/menus/${this.menuDataStoreStore.selectedMenu.id}/extras`);
         this.extras = response.data.data.map((item: any) => {
-          const it = toExtra(item);
-          return it;
+          return toExtra(item);
         });
       }
     },
@@ -169,9 +196,19 @@ export default defineComponent({
 
     async updateMenuStatus(newStatus: "INACTIVE" | "ACTIVE" | "FINISHED") {
       const response = await axios.put(`${backendUri}/menus/${this.selectedMenu.id}`, { status: newStatus });
-      if (newStatus === "ACTIVE" && this.menuDataStoreStore.currentMenu.id === this.menuId) {
-        this.setCurrentMenu(response.data.updatedMenu as Menu);
-        this.setCurrentMenuItems(this.menuItems);
+      //TODO revisar toda esta funcion
+      // if (newStatus === "ACTIVE" && this.menuDataStoreStore.currentMenu.id === this.menuId) {
+      //   this.setCurrentMenu(response.data.updatedMenu as Menu);
+      //   this.setCurrentMenuItems(this.menuItems);
+      // }
+      this.menu = response.data.updatedMenu as Menu;
+      this.selectMenu(this.menu);
+      if(newStatus === "ACTIVE"){
+          this.setCurrentMenu(response.data.updatedMenu as Menu);
+          this.setCurrentMenuData(this.menuItems, this.extras, this.salesReport, this.ushersReport);
+      } else {
+        this.setCurrentMenu({} as Menu);
+        this.setCurrentMenuData([], [], [], []);//CONTINUAR REVISANDO ESTO
       }
     },
 
