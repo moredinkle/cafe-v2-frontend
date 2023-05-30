@@ -36,7 +36,7 @@
                 <v-btn color="green-darken-2" @click="updateMenuStatus('ACTIVE')">Marcar como activo</v-btn>
               </template>
               <template v-else-if="selectedMenu.status === 'ACTIVE'">
-                <v-btn color="red-darken-2" @click="updateMenuStatus('FINISHED')">Marcar como terminado</v-btn>
+                <v-btn color="red-darken-2" @click="dialog = true">Marcar como terminado</v-btn>
               </template>
               <v-btn class="my-1" color="black" append-icon="mdi-file-pdf-box" @click="toPdf">Pdf</v-btn>
             </div>
@@ -58,13 +58,32 @@
       </v-card>
     </v-col>
   </v-row>
+  <popup-dialog
+    :dialog="dialog"
+    title="Marcar como terminado"
+    action-confirm-text="Confirmar"
+    @confirm-dialog-action="updateMenuStatus('FINISHED')"
+    @closeDialog="dialog = false"
+    @click:outside="dialog = false"
+  >
+    El menú ya no se podrá editar después de marcarse como terminado
+  </popup-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import MenuEdit from "@/components/Menu/MenuEdit.vue";
 import MenuReport from "@/components/Menu/MenuReport.vue";
-import { toExtra, type MenuExtra, type Menu, type MenuItem, type SalesReportRow, toReportRow, toMenuItem } from "@/utils/types";
+import PopupDialog from "@/components/UI/PopupDialog.vue";
+import {
+  toExtra,
+  type MenuExtra,
+  type Menu,
+  type MenuItem,
+  type SalesReportRow,
+  toReportRow,
+  toMenuItem,
+} from "@/utils/types";
 import { useDisplay } from "vuetify";
 import { mapStores, mapActions } from "pinia";
 import { useMenuDataStore } from "../stores/menu-data-store";
@@ -77,6 +96,7 @@ export default defineComponent({
   components: {
     MenuEdit,
     MenuReport,
+    PopupDialog,
   },
   setup() {
     const { mdAndUp } = useDisplay();
@@ -94,6 +114,7 @@ export default defineComponent({
       salesReport: [] as SalesReportRow[],
       ushersReport: [] as SalesReportRow[],
       menuId: this.$route.params.id_menu as string,
+      dialog: false,
     };
   }, //TODO añadir un items for manual save o algo asi
   computed: {
@@ -139,7 +160,7 @@ export default defineComponent({
     ]),
     async getMenuData() {
       const response = await axios.get(`${backendUri}/menus/${this.menuId}/complete`);
-      const {items, extras, sales, ushers} = response.data.menuData;
+      const { items, extras, sales, ushers } = response.data.menuData;
       this.menu = response.data.menuData.menu;
       this.menuItems = items.map((item: any) => {
         return toMenuItem(item);
@@ -203,12 +224,13 @@ export default defineComponent({
       // }
       this.menu = response.data.updatedMenu as Menu;
       this.selectMenu(this.menu);
-      if(newStatus === "ACTIVE"){
-          this.setCurrentMenu(response.data.updatedMenu as Menu);
-          this.setCurrentMenuData(this.menuItems, this.extras, this.salesReport, this.ushersReport);
+      this.dialog = false;
+      if (newStatus === "ACTIVE") {
+        this.setCurrentMenu(response.data.updatedMenu as Menu);
+        this.setCurrentMenuData(this.menuItems, this.extras, this.salesReport, this.ushersReport);
       } else {
         this.setCurrentMenu({} as Menu);
-        this.setCurrentMenuData([], [], [], []);//CONTINUAR REVISANDO ESTO
+        this.setCurrentMenuData([], [], [], []); //CONTINUAR REVISANDO ESTO
       }
     },
 
