@@ -1,7 +1,6 @@
 import type { MenuExtra, SalesReportRow } from "./types";
 import * as pdfMake from 'pdfmake/build/pdfmake.js';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
-(pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+import 'pdfmake/build/vfs_fonts';
 
 
 export function exportPdf(sales: SalesReportRow[], ushers: SalesReportRow[], extras: MenuExtra[], menuDate: string, totalSales: number, totalExtras: number) {

@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@mdi/font": "5.9.55",
-    "@types/pdfmake": "^0.2.2",
     "axios": "^1.3.4",
     "pdfmake": "^0.2.7",
     "pinia": "^2.0.33",
@@ -26,6 +25,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
     "@types/node": "^18.14.2",
+    "@types/pdfmake": "^0.2.2",
     "@types/webfontloader": "^1.0.0",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/eslint-config-typescript": "^11.0.2",
