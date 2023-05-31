@@ -31,7 +31,7 @@
       </v-col>
     </v-row>
     <div class="d-flex justify-end">
-      <v-btn type="submit" class="mt-2" color="success" @click="addToMenu()">Guardar</v-btn>
+      <v-btn type="submit" class="mt-2" color="success" @click="addToMenu()" :disabled="disableButton">Guardar</v-btn>
     </div>
   </v-form>
 </template>
@@ -43,14 +43,21 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "MenuItemForm",
   emits: ["addMenuItem"],
-  components: {},
+  computed:{
+    disableButton(){
+      if(!this.itemName || this.price <= 0 || this.stock <= 0){
+        return true;
+      }
+      return false;
+    }
+  },
   data() {
     return {
       itemName: "",
       itemNameRules: [
         (value: string) => {
-          if (value?.length > 3) return true;
-          return "First name must be at least 3 characters.";
+          if (value?.length > 0) return true;
+          return "No puede estar vacio";
         },
       ],
       price: 0,

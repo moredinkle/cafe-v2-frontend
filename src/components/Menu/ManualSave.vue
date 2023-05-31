@@ -34,13 +34,13 @@
           label="Vendidos"
           type="number"
         ></v-text-field>
-        <v-btn color="success" block class="mt-1" @click="addToManualSaves">Añadir</v-btn>
+        <v-btn color="success" block class="mt-1" @click="addToManualSaves" :disabled="manualSaveSold <= 0">Añadir</v-btn>
       </v-col>
     </v-row>
 
     <table-component :headers="tableHeaders" :items="manualSaves" table-title="Cambios" class="my-5" />
     <div class="d-flex justify-center">
-      <v-btn color="success" size="large" @click="saveChanges">Guardar cambios</v-btn>
+      <v-btn color="success" size="large" @click="saveChanges" :loading="saveLoading" :disabled="manualSaves.length <= 0">Guardar cambios</v-btn>
     </div>
   </div>
 
@@ -86,6 +86,7 @@ export default defineComponent({
   data() {
     return {
       selectedItem: {} as SalesReportRow,
+      saveLoading: false,
       manualSaveSold: 0,
       manualSaveSoldRules: [
         (value: number) => {
@@ -107,7 +108,7 @@ export default defineComponent({
   },
   methods: {
     addToManualSaves() {
-      if(this.manualSaveSold > this.selectedItem.stock) {
+      if (this.manualSaveSold > this.selectedItem.stock) {
         this.displaySnackbar("error", "No alcanza jefe");
         return;
       }
@@ -126,6 +127,7 @@ export default defineComponent({
 
     async saveChanges() {
       try {
+        this.saveLoading = true;
         const type = "VENTA";
         const order: Order = {
           change: 0,
@@ -138,19 +140,21 @@ export default defineComponent({
           const orderId = response.data.newId;
           for (const item of this.manualSaves) {
             const orderItem: OrderItem = {
-                quantity: item.sold || 0,
-                subtotal: item.subtotal || 0,
-                menuItemId: item.id || "",
-                orderId: orderId,
-              };
+              quantity: item.sold || 0,
+              subtotal: item.subtotal || 0,
+              menuItemId: item.id || "",
+              orderId: orderId,
+            };
             await axios.post(`${backendUri}/orders/${orderId}/items`, orderItem);
           }
           this.displaySnackbar("info", "Cambios guardados");
           this.manualSaves = [];
           this.selectedItem = {} as SalesReportRow;
           this.$emit("updateMenuItems");
+          this.saveLoading = false;
         }
       } catch (error) {
+        this.saveLoading = false;
         alert("Error al guardar");
       }
     },

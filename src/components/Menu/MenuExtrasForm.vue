@@ -25,7 +25,7 @@
       </v-col>
     </v-row>
     <div class="d-flex justify-end">
-      <v-btn type="submit" class="mt-2" color="success" @click="addToExtras()">Guardar</v-btn>
+      <v-btn type="submit" class="mt-2" color="success" @click="addToExtras()" :disabled="disableButton">Guardar</v-btn>
     </div>
   </v-form>
 </template>
@@ -36,7 +36,14 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "MenuExtrasForm",
   emits: ["addMenuExtra"],
-  components: {},
+  computed:{
+    disableButton(){
+      if(!this.description || this.amount <= 0){
+        return true;
+      }
+      return false;
+    }
+  },
   data() {
     return {
       orderType: "GASTO",

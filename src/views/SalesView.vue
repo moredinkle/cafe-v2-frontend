@@ -33,7 +33,15 @@
           ></v-text-field>
           <span class="text-subtitle-1 mt-1"> Total: {{ orderTotal }} </span>
           <span class="text-subtitle-1 mt-1"> Cambio: {{ change }} </span>
-          <v-btn color="success" size="large" class="mt-1" @click="saveOrder" :disabled="sellDisabled">Guardar</v-btn>
+          <v-btn
+            color="success"
+            size="large"
+            class="mt-1"
+            @click="saveOrder"
+            :loading="saveOrderLoading"
+            :disabled="sellDisabled"
+            >Guardar</v-btn
+          >
         </div>
       </v-card>
     </v-col>
@@ -88,6 +96,7 @@ export default defineComponent({
       snackbarColor: "",
       snackbarText: "",
       snackbar: false,
+      saveOrderLoading: false,
       tableHeaders: [
         { title: "Nombre", align: "start", key: "name" },
         { title: "Cantidad", key: "quantity" },
@@ -143,8 +152,9 @@ export default defineComponent({
 
     async saveOrder() {
       try {
+        this.saveOrderLoading = true;
         const type = this.orderType === "Venta" ? "VENTA" : "SERVIDOR";
-        if(type === "SERVIDOR") {
+        if (type === "SERVIDOR") {
           this.payedWith = this.orderTotal;
         }
         const order: Order = {
@@ -172,11 +182,13 @@ export default defineComponent({
           this.orderTotal = 0;
           this.displaySnackbar("success", "Guardado con exito");
           await this.updateActiveMenuItems();
-          if(!this.menuDataStoreStore.newSalesFlag){
+          if (!this.menuDataStoreStore.newSalesFlag) {
             this.setNewSalesFlag(true);
           }
+          this.saveOrderLoading = false;
         }
       } catch (error) {
+        this.saveOrderLoading = false;
         alert("Error al guardar");
       }
     },
